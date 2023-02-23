@@ -1,8 +1,10 @@
-import { Controller, Get, HttpCode, Logger } from '@nestjs/common';
-import { AppService } from './app.service';
-import { AxiosResponse } from 'axios';
-import { catchError, map, Observable, tap } from 'rxjs';
+import { Body, Controller, Get, HttpCode, Logger, Param, Post, UseInterceptors } from "@nestjs/common";
+import { AppService } from "./app.service";
+import { AxiosResponse } from "axios";
+import { catchError, Observable, of, tap } from "rxjs";
+import { ReqInterceptor } from "./interceptor.service";
 
+@UseInterceptors(ReqInterceptor)
 @Controller()
 export class AppController {
   constructor(private readonly _appService: AppService) {}
@@ -52,10 +54,6 @@ export class AppController {
         'https://services.swpc.noaa.gov/json/boulder_k_index_1m.json',
       )
       .pipe(
-        tap((e) => {
-          console.log(e);
-          this.logger.log(e);
-        }),
         catchError((err) => {
           this.logger.error(err);
           throw 'An error happened on KPi 1month SWPC API !';
@@ -63,7 +61,7 @@ export class AppController {
       );
   }
 
-  @Get('/instant/solarWind')
+  @Get('/forecast/solarwind')
   @HttpCode(200)
   getSolarWind$(): Observable<AxiosResponse<any>> {
     return this._appService
@@ -78,8 +76,26 @@ export class AppController {
       );
   }
 
+  @Post('/instant/nowcast')
+  @HttpCode(200)
+  postNowcast$(@Body() coords: {lat: number, lng: number}): Observable<any> {
+    console.log(coords);
+    // TODO a faire ici
+    // return this._appService
+    //   .getSwpcData$(
+    //     'https://services.swpc.noaa.gov/products/geospace/propagated-solar-wind-1-hour.json',
+    //   )
+    return of(7)
+      .pipe(
+        catchError((err) => {
+          this.logger.error(err);
+          throw 'An error happened on instant nowcast local API !';
+        }),
+      );
+  }
+
   /** Do not rewrite */
-  @Get('/map/poleNorth')
+  @Get('/map/polenorth')
   @HttpCode(200)
   getPoleNorthMap$(): Observable<AxiosResponse<any>> {
     return this._appService
@@ -89,13 +105,13 @@ export class AppController {
       .pipe(
         catchError((err) => {
           this.logger.error(err);
-          throw 'An error happened on solarWind SWPC API !';
+          throw 'An error happened on map pole north SWPC API !';
         }),
       );
   }
 
   /** Do not rewrite */
-  @Get('/map/poleSouth')
+  @Get('/map/polesouth')
   @HttpCode(200)
   getPoleSouthMap$(): Observable<AxiosResponse<any>> {
     return this._appService
@@ -105,7 +121,7 @@ export class AppController {
       .pipe(
         catchError((err) => {
           this.logger.error(err);
-          throw 'An error happened on solarWind SWPC API !';
+          throw 'An error happened on map pole south SWPC API !';
         }),
       );
   }
@@ -119,7 +135,7 @@ export class AppController {
       .pipe(
         catchError((err) => {
           this.logger.error(err);
-          throw 'An error happened on solarWind SWPC API !';
+          throw 'An error happened on 27 days SWPC API !';
         }),
       );
   }
@@ -135,7 +151,7 @@ export class AppController {
       .pipe(
         catchError((err) => {
           this.logger.error(err);
-          throw 'An error happened on solarWind SWPC API !';
+          throw 'An error happened on KP Forecast API !';
         }),
       );
   }

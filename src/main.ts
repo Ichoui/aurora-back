@@ -6,6 +6,7 @@ import {
 import * as express from 'express';
 import * as functions from 'firebase-functions';
 import { AppModule } from './app.module';
+import { json, urlencoded } from "express";
 
 const server: express.Express = express();
 export const createNestServer = async (expressInstance: express.Express) => {
@@ -16,8 +17,14 @@ export const createNestServer = async (expressInstance: express.Express) => {
     {},
   );
   app.enableCors();
+  app.disable('x-powered-by');
+  app.disable('X-Powered-By');
+  // app.use(json({ limit: '50mb' }));
+  // app.use(urlencoded({ extended: true, limit: '50mb' }));
   return app.init();
 };
+
+// A faire : max requete par second (par ip ?)
 createNestServer(server)
   .then((v) => console.log('Nest Ready'))
   .catch((err) => console.error('Nest broken', err));
