@@ -22,4 +22,5 @@ createNestServer(server)
   .then((v) => console.log('Nest Ready'))
   .catch((err) => console.error('Nest broken', err));
 
+// const name is first segment of api
 export const aurora: functions.HttpsFunction = functions.https.onRequest(server);
