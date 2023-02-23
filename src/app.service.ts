@@ -13,13 +13,10 @@ export class AppService {
   }
 
   getSwpcData$(url: string, swpcType: SWPC, body?: Record<string, unknown>): Observable<AxiosResponse<any>> {
-    return this._httpService.get(url).pipe(map(r => {
-      return dataTreatment(r.data, swpcType, body);
-      // return r.data // here its working... :(
-    }))
+    return this._httpService.get(url).pipe(map(r => dataTreatment(r.data, swpcType, body)))
   }
 
-  // getWeather$()
+  // getWeather$() // TODO avec la weather
 }
 
 /**
