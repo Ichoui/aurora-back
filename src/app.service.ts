@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
+import { Injectable } from "@nestjs/common";
+import { HttpService } from "@nestjs/axios";
 import { map, Observable } from "rxjs";
-import { AxiosResponse } from 'axios';
+import { AxiosResponse } from "axios";
+import { SWPC } from "./swpc.model";
 
 @Injectable()
 export class AppService {
@@ -11,27 +12,33 @@ export class AppService {
     return 'Hello Aurora Chasers!';
   }
 
-  getSwpcData$(str: string): Observable<AxiosResponse<any>> {
-    return this._httpService.get(str).pipe(map(r => r.data))
+  getSwpcData$(url: string, swpcType: SWPC, body?: Record<string, unknown>): Observable<AxiosResponse<any>> {
+    return this._httpService.get(url).pipe(map(r => {
+      return dataTreatment(r.data, swpcType, body);
+      // return r.data // here its working... :(
+    }))
   }
+
+  // getWeather$()
 }
 
 /**
- * @param urlRequested url requested from front, without the host part
  * @param data any data from API ; nullable
- * @param body body from POST method
+ * @param swpcType type of swpc
+ * @param body
+ * @return data formatted for front end
  */
-export function dataTreatment(urlRequested, data, body) {
-  switch (urlRequested) {
-    case '/aurora/map/ovation':
+export function dataTreatment(data: unknown, swpcType?: SWPC, body?: any): any {
+  switch (swpcType) {
+    case SWPC.OVATION_MAP:
       // const ovationMapCached = cache.get('ovationMapCache')
-      const ovationMapCached = []
-      if (ovationMapCached) {
-        return ovationMapCached
-      }
+      // const ovationMapCached = []
+      // if (ovationMapCached) {
+      //   return ovationMapCached
+      // }
       const mappedCoords = [];
-      // TOdo PERFORMANCE OPTIMISER FOREACH A VERIFIER
-      data['coordinates'].forEach((coords /*[long, lat, aurora]*/) => {
+      // TOdo PERFORMANCE OPTIMISER FOREACH OR FOR ... OF A VERIFIER
+      for (const coords of data['coordinates']) {
         let long = coords[0];
         const lat = coords[1];
         const nowcastAurora = coords[2];
@@ -47,20 +54,22 @@ export function dataTreatment(urlRequested, data, body) {
             mappedCoords.push([long, lat, nowcastAurora])
           }
         }
-      })
+      }
       // cache.set("ovationMapCache", mappedCoords, cachedTimeMapOvation)
+      // TODO revoir cache
       // cache.set("ovationFullForNowcast", data['coordinates'], cachedTimeMapOvation)
       return mappedCoords;
-    case '/aurora/forecast/solarcycle':
+    case SWPC.FORECAST_SOLARCYCLE:
       // PERFORMANCE MAP
-      return data.map(e => ({
-        timeTag: e['time-tag'],
-        predictedSsn: e['predicted_ssn'],
-        predictedSolarFlux: e['predicted_f10.7']
-      }))
-    case '/aurora/instant/nowcast':
-      return {nowcast: getNowcastAurora(body['lng'], body['lat'])}
-    case '/aurora/forecast/solarwind':
+      return (data as unknown[]).map(e => ({
+        timeTag: e["time-tag"],
+        predictedSsn: e["predicted_ssn"],
+        predictedSolarFlux: e["predicted_f10.7"]
+      }));
+    case SWPC.INSTANT_NOWCAST:
+      return { nowcast: getNowcastAurora(body["lng"], body["lat"]) };
+    case SWPC.FORECAST_SOLARWIND:
+      // TODO finaliser un jour ceci
       // const finalData = []
       // const d = data.map((e, i) => {
       //     if (i === 0) {
@@ -70,17 +79,19 @@ export function dataTreatment(urlRequested, data, body) {
       //     }
       // })
       return data;
-    case '/aurora/instant/kp':
-      return data[data.length - 1]
+    case SWPC.INSTANT_KP:
+      return data[(data as unknown[]).length - 1];
     default:
       return data;
   }
 }
 
 
-function getNowcastAurora(long, lat) {
+function getNowcastAurora(long, lat): number {
+  return 2
   try {
     // const ovationMapCache = cache.get('ovationFullForNowcast');
+    // TODO revoir cache
     const ovationMapCache = []; // a voir
     if (!ovationMapCache) {
       return null;
