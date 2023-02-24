@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { map, Observable } from 'rxjs';
-import { AxiosResponse } from 'axios';
-import { SWPC } from './swpc.model';
+import { Injectable } from "@nestjs/common";
+import { HttpService } from "@nestjs/axios";
+import { map, Observable, of } from "rxjs";
+import { AxiosResponse } from "axios";
+import { SWPC } from "./swpc.model";
 
 @Injectable()
 export class AuroraService {

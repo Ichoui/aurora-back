@@ -9,26 +9,26 @@ import {
 } from '@nestjs/common';
 import { AuroraService } from './aurora.service';
 import { AxiosResponse } from 'axios';
-import { catchError, Observable } from 'rxjs';
+import { catchError, Observable, tap } from "rxjs";
 import { ReqInterceptor } from '../interceptor.service';
 import { SWPC } from './swpc.model';
 
 @UseInterceptors(ReqInterceptor)
 @Controller()
 export class AuroraController {
-  constructor(private readonly _appService: AuroraService) {}
+  constructor(private readonly _auroraService: AuroraService) {}
   private readonly logger = new Logger(AuroraService.name);
 
-  @Get()
-  @HttpCode(204)
+  @Get('/')
+  @HttpCode(200)
   auroraPath$(): string {
-    return this._appService.auroraPath();
+    return this._auroraService.auroraPath();
   }
 
   @Get('/map/ovation')
   @HttpCode(200)
   getOvation$(): Observable<AxiosResponse<any>> {
-    return this._appService
+    return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json',
         SWPC.OVATION_MAP,
@@ -44,7 +44,7 @@ export class AuroraController {
   @Get('/forecast/solarcycle')
   @HttpCode(200)
   getSolarCycle$(): Observable<AxiosResponse<any>> {
-    return this._appService
+    return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/json/solar-cycle/predicted-solar-cycle.json',
         SWPC.FORECAST_SOLARCYCLE,
@@ -60,7 +60,7 @@ export class AuroraController {
   @Get('/forecast/solarwind')
   @HttpCode(200)
   getSolarWind$(): Observable<AxiosResponse<any>> {
-    return this._appService
+    return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/geospace/propagated-solar-wind-1-hour.json',
         SWPC.FORECAST_SOLARWIND,
@@ -76,7 +76,7 @@ export class AuroraController {
   @Get('/instant/kp')
   @HttpCode(200)
   getInstantKp$(): Observable<AxiosResponse<any>> {
-    return this._appService
+    return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/json/boulder_k_index_1m.json',
         SWPC.INSTANT_KP,
@@ -92,7 +92,7 @@ export class AuroraController {
   @Post('/instant/nowcast')
   @HttpCode(200)
   postNowcast$(@Body() coords: { lat: number; lng: number }): Observable<any> {
-    return this._appService
+    return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/geospace/propagated-solar-wind-1-hour.json',
         SWPC.INSTANT_NOWCAST,
@@ -110,7 +110,7 @@ export class AuroraController {
   @Get('/map/polenorth')
   @HttpCode(200)
   getPoleNorthMap$(): Observable<AxiosResponse<any>> {
-    return this._appService
+    return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/animations/ovation_north_24h.json',
         SWPC.POLE_NORTH,
@@ -127,7 +127,7 @@ export class AuroraController {
   @Get('/map/polesouth')
   @HttpCode(200)
   getPoleSouthMap$(): Observable<AxiosResponse<any>> {
-    return this._appService
+    return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/animations/ovation_south_24h.json',
         SWPC.POLE_SOUTH,
@@ -144,7 +144,7 @@ export class AuroraController {
   @Get('/forecast/twentysevendays')
   @HttpCode(200)
   get27DaysForecast$(): Observable<AxiosResponse<any>> {
-    return this._appService
+    return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/text/27-day-outlook.txt',
         SWPC.TWENTY_SEVEN_DAYS,
@@ -161,7 +161,7 @@ export class AuroraController {
   @Get('/forecast/kp')
   @HttpCode(200)
   getKpForecast$(): Observable<AxiosResponse<any>> {
-    return this._appService
+    return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json',
         SWPC.FORECAST_KP,
