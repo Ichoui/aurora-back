@@ -1,19 +1,25 @@
-import { Injectable } from "@nestjs/common";
-import { HttpService } from "@nestjs/axios";
-import { map, Observable } from "rxjs";
-import { AxiosResponse } from "axios";
-import { SWPC } from "./swpc.model";
+import { Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { map, Observable } from 'rxjs';
+import { AxiosResponse } from 'axios';
+import { SWPC } from './swpc.model';
 
 @Injectable()
-export class AppService {
+export class AuroraService {
   constructor(private readonly _httpService: HttpService) {}
 
   auroraPath(): string {
     return 'Hello Aurora Chasers!';
   }
 
-  getSwpcData$(url: string, swpcType: SWPC, body?: Record<string, unknown>): Observable<AxiosResponse<any>> {
-    return this._httpService.get(url).pipe(map(r => dataTreatment(r.data, swpcType, body)))
+  getSwpcData$(
+    url: string,
+    swpcType: SWPC,
+    body?: Record<string, unknown>,
+  ): Observable<AxiosResponse<any>> {
+    return this._httpService
+      .get(url)
+      .pipe(map((r) => dataTreatment(r.data, swpcType, body)));
   }
 
   // getWeather$() // TODO avec la weather
@@ -48,7 +54,7 @@ export function dataTreatment(data: unknown, swpcType?: SWPC, body?: any): any {
         if (lat >= 30 || lat <= -30) {
           if (nowcastAurora >= 2 && long % 2 === 0 && lat % 2 === 0) {
             // coords avec long soustrait pour couvrir -180 à 180 de longitude
-            mappedCoords.push([long, lat, nowcastAurora])
+            mappedCoords.push([long, lat, nowcastAurora]);
           }
         }
       }
@@ -58,13 +64,13 @@ export function dataTreatment(data: unknown, swpcType?: SWPC, body?: any): any {
       return mappedCoords;
     case SWPC.FORECAST_SOLARCYCLE:
       // PERFORMANCE MAP
-      return (data as unknown[]).map(e => ({
-        timeTag: e["time-tag"],
-        predictedSsn: e["predicted_ssn"],
-        predictedSolarFlux: e["predicted_f10.7"]
+      return (data as unknown[]).map((e) => ({
+        timeTag: e['time-tag'],
+        predictedSsn: e['predicted_ssn'],
+        predictedSolarFlux: e['predicted_f10.7'],
       }));
     case SWPC.INSTANT_NOWCAST:
-      return { nowcast: getNowcastAurora(body["lng"], body["lat"]) };
+      return { nowcast: getNowcastAurora(body['lng'], body['lat']) };
     case SWPC.FORECAST_SOLARWIND:
       // TODO finaliser un jour ceci
       // const finalData = []
@@ -75,6 +81,7 @@ export function dataTreatment(data: unknown, swpcType?: SWPC, body?: any): any {
       //         finalData.push(e)
       //     }
       // })
+      // console.log(data);
       return data;
     case SWPC.INSTANT_KP:
       return data[(data as unknown[]).length - 1];
@@ -83,9 +90,8 @@ export function dataTreatment(data: unknown, swpcType?: SWPC, body?: any): any {
   }
 }
 
-
 function getNowcastAurora(long, lat): number {
-  return 2
+  return 2;
   try {
     // const ovationMapCache = cache.get('ovationFullForNowcast');
     // TODO revoir cache
@@ -97,7 +103,7 @@ function getNowcastAurora(long, lat): number {
     // Todo OTPIMISER
     for (let coords of ovationMapCache) {
       if (coords[0] === Math.round(long) && coords[1] === Math.round(lat)) {
-        return coords[2]
+        return coords[2];
       }
     }
   } catch (e) {

@@ -7,17 +7,17 @@ import {
   Post,
   UseInterceptors,
 } from '@nestjs/common';
-import { AppService } from './app.service';
+import { AuroraService } from './aurora.service';
 import { AxiosResponse } from 'axios';
-import { catchError, Observable, of } from 'rxjs';
-import { ReqInterceptor } from './interceptor.service';
+import { catchError, Observable } from 'rxjs';
+import { ReqInterceptor } from '../interceptor.service';
 import { SWPC } from './swpc.model';
 
 @UseInterceptors(ReqInterceptor)
 @Controller()
-export class AppController {
-  constructor(private readonly _appService: AppService) {}
-  private readonly logger = new Logger(AppService.name);
+export class AuroraController {
+  constructor(private readonly _appService: AuroraService) {}
+  private readonly logger = new Logger(AuroraService.name);
 
   @Get()
   @HttpCode(204)
@@ -96,7 +96,7 @@ export class AppController {
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/geospace/propagated-solar-wind-1-hour.json',
         SWPC.INSTANT_NOWCAST,
-        coords
+        coords,
       )
       .pipe(
         catchError((err) => {

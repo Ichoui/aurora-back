@@ -5,22 +5,22 @@ import {
 } from '@nestjs/platform-express';
 import * as express from 'express';
 import * as functions from 'firebase-functions';
-import { AppModule } from './app.module';
+import { AuroraModule } from './aurora/aurora.module';
 import { json, urlencoded } from "express";
 
 const server: express.Express = express();
 export const createNestServer = async (expressInstance: express.Express) => {
   const adapter = new ExpressAdapter(expressInstance);
   const app = await NestFactory.create<NestExpressApplication>(
-    AppModule,
+    AuroraModule,
     adapter,
     {},
   );
   app.enableCors();
   app.disable('x-powered-by');
   app.disable('X-Powered-By');
-  // app.use(json({ limit: '50mb' }));
-  // app.use(urlencoded({ extended: true, limit: '50mb' }));
+  app.use(json({ limit: '75mb' }));
+  app.use(urlencoded({ extended: true, limit: '75mb' }));
   return app.init();
 };
 
