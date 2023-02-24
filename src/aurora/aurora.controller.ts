@@ -28,8 +28,8 @@ export class AuroraController {
   }
 
   @Get('/map/ovation')
-  @UseInterceptors(CacheInterceptor)
-  @CacheKey('custom-key')
+  // @UseInterceptors(CacheInterceptor)
+  @CacheKey('ovationData')
   @CacheTTL(30 * 60000) // override TTL to 30 * 60000 milliseconds
   @HttpCode(200)
   getOvation(): Observable<Promise<any>> {

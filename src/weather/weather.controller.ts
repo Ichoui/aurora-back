@@ -19,9 +19,6 @@ export class WeatherController {
   private readonly logger = new Logger(WeatherService.name);
 
   @Get('/geocode')
-  @UseInterceptors(CacheInterceptor)
-  @CacheKey('geocode')
-  @CacheTTL(60000 * 5)
   @HttpCode(200)
   getGeocode(@Query() params): Observable<AxiosResponse<any>> {
     return this._weatherService.reverseGeoCode$(params).pipe(
@@ -33,9 +30,6 @@ export class WeatherController {
   }
 
   @Get('/weather')
-  @UseInterceptors(CacheInterceptor)
-  @CacheKey('weather')
-  @CacheTTL(60000 * 5)
   @HttpCode(200)
   getWeather(@Query() params): Observable<AxiosResponse<any>> {
     return this._weatherService.getWeather$(params).pipe(

@@ -21,6 +21,7 @@ export class AuroraService {
     swpcType: SWPC,
     body?: Record<string, unknown>,
   ): Observable<Promise<any>> {
+    console.log(url);
     return this._httpService
       .get(url)
       .pipe(map((r) => this._dataTreatment(r.data, swpcType, body)));
@@ -37,12 +38,16 @@ export class AuroraService {
     swpcType?: SWPC,
     body?: any,
   ): Promise<any> {
+    console.log('PTNNN', data);
     switch (swpcType) {
       case SWPC.OVATION_MAP:
         const ovationMapCached = await this._cacheService.get(
           'ovationMapCache',
         );
+        console.log('geee');
+        console.log(ovationMapCached);
         if (ovationMapCached) {
+          console.log(ovationMapCached);
           return ovationMapCached;
         }
         const mappedCoords = [];
