@@ -1,9 +1,19 @@
-import { Body, Controller, Get, HttpCode, Logger, Post, UseInterceptors } from "@nestjs/common";
-import { AuroraService } from "./aurora.service";
-import { AxiosResponse } from "axios";
-import { catchError, Observable } from "rxjs";
-import { ReqInterceptor } from "../interceptor.service";
-import { SWPC } from "./swpc.model";
+import {
+  Body,
+  CacheInterceptor,
+  CacheKey,
+  CacheTTL,
+  Controller,
+  Get,
+  HttpCode,
+  Logger,
+  Post,
+  UseInterceptors,
+} from '@nestjs/common';
+import { AuroraService } from './aurora.service';
+import { catchError, Observable, tap } from 'rxjs';
+import { ReqInterceptor } from '../interceptor.service';
+import { SWPC } from './swpc.model';
 
 @UseInterceptors(ReqInterceptor)
 @Controller()
@@ -18,8 +28,11 @@ export class AuroraController {
   }
 
   @Get('/map/ovation')
+  @UseInterceptors(CacheInterceptor)
+  @CacheKey('custom-key')
+  @CacheTTL(30 * 60000) // override TTL to 30 * 60000 milliseconds
   @HttpCode(200)
-  getOvation(): Observable<AxiosResponse<any>> {
+  getOvation(): Observable<Promise<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json',
@@ -35,7 +48,7 @@ export class AuroraController {
 
   @Get('/forecast/solarcycle')
   @HttpCode(200)
-  getSolarCycle(): Observable<AxiosResponse<any>> {
+  getSolarCycle(): Observable<Promise<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/json/solar-cycle/predicted-solar-cycle.json',
@@ -51,7 +64,7 @@ export class AuroraController {
 
   @Get('/forecast/solarwind')
   @HttpCode(200)
-  getSolarWind(): Observable<AxiosResponse<any>> {
+  getSolarWind(): Observable<Promise<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/geospace/propagated-solar-wind-1-hour.json',
@@ -67,7 +80,7 @@ export class AuroraController {
 
   @Get('/instant/kp')
   @HttpCode(200)
-  getInstantKp(): Observable<AxiosResponse<any>> {
+  getInstantKp(): Observable<Promise<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/json/boulder_k_index_1m.json',
@@ -83,7 +96,9 @@ export class AuroraController {
 
   @Post('/instant/nowcast')
   @HttpCode(200)
-  postNowcast(@Body() coords: { lat: number; lng: number }): Observable<any> {
+  postNowcast(
+    @Body() coords: { lat: number; lng: number },
+  ): Observable<Promise<number>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/geospace/propagated-solar-wind-1-hour.json',
@@ -91,6 +106,7 @@ export class AuroraController {
         coords,
       )
       .pipe(
+        tap((e) => console.log('ICI OK', e)),
         catchError((err) => {
           this.logger.error(err);
           throw 'An error happened on instant nowcast local API !';
@@ -101,7 +117,7 @@ export class AuroraController {
   /** Do not rewrite */
   @Get('/map/polenorth')
   @HttpCode(200)
-  getPoleNorthMap(): Observable<AxiosResponse<any>> {
+  getPoleNorthMap(): Observable<Promise<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/animations/ovation_north_24h.json',
@@ -118,7 +134,7 @@ export class AuroraController {
   /** Do not rewrite */
   @Get('/map/polesouth')
   @HttpCode(200)
-  getPoleSouthMap(): Observable<AxiosResponse<any>> {
+  getPoleSouthMap(): Observable<Promise<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/animations/ovation_south_24h.json',
@@ -135,7 +151,7 @@ export class AuroraController {
   /** Do not rewrite */
   @Get('/forecast/twentysevendays')
   @HttpCode(200)
-  get27DaysForecast(): Observable<AxiosResponse<any>> {
+  get27DaysForecast(): Observable<Promise<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/text/27-day-outlook.txt',
@@ -152,7 +168,7 @@ export class AuroraController {
   /** Do not rewrite */
   @Get('/forecast/kp')
   @HttpCode(200)
-  getKpForecast(): Observable<AxiosResponse<any>> {
+  getKpForecast(): Observable<Promise<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json',

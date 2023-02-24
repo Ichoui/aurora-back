@@ -1,8 +1,16 @@
-import { Controller, Get, HttpCode, Logger, Query, UseInterceptors } from "@nestjs/common";
-import { ReqInterceptor } from "../interceptor.service";
-import { WeatherService } from "./weather.service";
-import { AxiosResponse } from "axios";
-import { catchError, Observable } from "rxjs";
+import {
+  CacheInterceptor, CacheKey, CacheTTL,
+  Controller,
+  Get,
+  HttpCode,
+  Logger,
+  Query,
+  UseInterceptors,
+} from '@nestjs/common';
+import { ReqInterceptor } from '../interceptor.service';
+import { WeatherService } from './weather.service';
+import { AxiosResponse } from 'axios';
+import { catchError, Observable } from 'rxjs';
 
 @UseInterceptors(ReqInterceptor)
 @Controller()
@@ -11,6 +19,9 @@ export class WeatherController {
   private readonly logger = new Logger(WeatherService.name);
 
   @Get('/geocode')
+  @UseInterceptors(CacheInterceptor)
+  @CacheKey('geocode')
+  @CacheTTL(60000 * 5)
   @HttpCode(200)
   getGeocode(@Query() params): Observable<AxiosResponse<any>> {
     return this._weatherService.reverseGeoCode$(params).pipe(
@@ -22,6 +33,9 @@ export class WeatherController {
   }
 
   @Get('/weather')
+  @UseInterceptors(CacheInterceptor)
+  @CacheKey('weather')
+  @CacheTTL(60000 * 5)
   @HttpCode(200)
   getWeather(@Query() params): Observable<AxiosResponse<any>> {
     return this._weatherService.getWeather$(params).pipe(
