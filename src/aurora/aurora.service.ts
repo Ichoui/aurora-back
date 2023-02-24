@@ -8,7 +8,7 @@ import { SWPC } from "./swpc.model";
 export class AuroraService {
   constructor(private readonly _httpService: HttpService) {}
 
-  auroraPath(): string {
+  auroraPath$(): string {
     return 'Hello Aurora Chasers!';
   }
 
@@ -21,8 +21,6 @@ export class AuroraService {
       .get(url)
       .pipe(map((r) => dataTreatment(r.data, swpcType, body)));
   }
-
-  // getWeather$() // TODO avec la weather
 }
 
 /**

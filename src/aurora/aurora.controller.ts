@@ -1,17 +1,9 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  Logger,
-  Post,
-  UseInterceptors,
-} from '@nestjs/common';
-import { AuroraService } from './aurora.service';
-import { AxiosResponse } from 'axios';
-import { catchError, Observable, tap } from "rxjs";
-import { ReqInterceptor } from '../interceptor.service';
-import { SWPC } from './swpc.model';
+import { Body, Controller, Get, HttpCode, Logger, Post, UseInterceptors } from "@nestjs/common";
+import { AuroraService } from "./aurora.service";
+import { AxiosResponse } from "axios";
+import { catchError, Observable } from "rxjs";
+import { ReqInterceptor } from "../interceptor.service";
+import { SWPC } from "./swpc.model";
 
 @UseInterceptors(ReqInterceptor)
 @Controller()
@@ -21,13 +13,13 @@ export class AuroraController {
 
   @Get('/')
   @HttpCode(200)
-  auroraPath$(): string {
-    return this._auroraService.auroraPath();
+  auroraPath(): string {
+    return this._auroraService.auroraPath$();
   }
 
   @Get('/map/ovation')
   @HttpCode(200)
-  getOvation$(): Observable<AxiosResponse<any>> {
+  getOvation(): Observable<AxiosResponse<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json',
@@ -43,7 +35,7 @@ export class AuroraController {
 
   @Get('/forecast/solarcycle')
   @HttpCode(200)
-  getSolarCycle$(): Observable<AxiosResponse<any>> {
+  getSolarCycle(): Observable<AxiosResponse<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/json/solar-cycle/predicted-solar-cycle.json',
@@ -59,7 +51,7 @@ export class AuroraController {
 
   @Get('/forecast/solarwind')
   @HttpCode(200)
-  getSolarWind$(): Observable<AxiosResponse<any>> {
+  getSolarWind(): Observable<AxiosResponse<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/geospace/propagated-solar-wind-1-hour.json',
@@ -75,7 +67,7 @@ export class AuroraController {
 
   @Get('/instant/kp')
   @HttpCode(200)
-  getInstantKp$(): Observable<AxiosResponse<any>> {
+  getInstantKp(): Observable<AxiosResponse<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/json/boulder_k_index_1m.json',
@@ -91,7 +83,7 @@ export class AuroraController {
 
   @Post('/instant/nowcast')
   @HttpCode(200)
-  postNowcast$(@Body() coords: { lat: number; lng: number }): Observable<any> {
+  postNowcast(@Body() coords: { lat: number; lng: number }): Observable<any> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/geospace/propagated-solar-wind-1-hour.json',
@@ -109,7 +101,7 @@ export class AuroraController {
   /** Do not rewrite */
   @Get('/map/polenorth')
   @HttpCode(200)
-  getPoleNorthMap$(): Observable<AxiosResponse<any>> {
+  getPoleNorthMap(): Observable<AxiosResponse<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/animations/ovation_north_24h.json',
@@ -126,7 +118,7 @@ export class AuroraController {
   /** Do not rewrite */
   @Get('/map/polesouth')
   @HttpCode(200)
-  getPoleSouthMap$(): Observable<AxiosResponse<any>> {
+  getPoleSouthMap(): Observable<AxiosResponse<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/animations/ovation_south_24h.json',
@@ -143,7 +135,7 @@ export class AuroraController {
   /** Do not rewrite */
   @Get('/forecast/twentysevendays')
   @HttpCode(200)
-  get27DaysForecast$(): Observable<AxiosResponse<any>> {
+  get27DaysForecast(): Observable<AxiosResponse<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/text/27-day-outlook.txt',
@@ -160,7 +152,7 @@ export class AuroraController {
   /** Do not rewrite */
   @Get('/forecast/kp')
   @HttpCode(200)
-  getKpForecast$(): Observable<AxiosResponse<any>> {
+  getKpForecast(): Observable<AxiosResponse<any>> {
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json',
