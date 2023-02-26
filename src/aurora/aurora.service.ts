@@ -51,11 +51,12 @@ export class AuroraService {
           return ovationMapCached;
         }
         const mappedCoords = [];
-        // TOdo PERFORMANCE OPTIMISER FOREACH OR FOR ... OF A VERIFIER
-        for (const coords of data['coordinates']) {
-          let long = coords[0];
-          const lat = coords[1];
-          const nowcastAurora = coords[2];
+        let length = data['coordinates'].length;
+        while (--length) {
+        // for (const coords of data['coordinates']) {
+          let long = data['coordinates'][length][0];
+          const lat = data['coordinates'][length][1];
+          const nowcastAurora = data['coordinates'][length][2];
           if (long > 180) {
             // Longitude 180+ dépasse de la map à droite, cela permet de revenir tout à gauche de la carte
             long = long - 360;
@@ -83,7 +84,6 @@ export class AuroraService {
         console.log(await this._cacheService.get('ovationFullForNowcast'));
         return mappedCoords;
       case SWPC.FORECAST_SOLARCYCLE:
-        // PERFORMANCE MAP
         return (data as unknown[]).map((e) => ({
           timeTag: e['time-tag'],
           predictedSsn: e['predicted_ssn'],
@@ -113,18 +113,18 @@ export class AuroraService {
   }
 
   private async _getNowcastAurora(long, lat): Promise<number> {
-    const ovationMapCache = (await this._cacheService.get(
+    const coords = (await this._cacheService.get(
       'ovationFullForNowcast',
     )) as unknown[];
-    if (!ovationMapCache) {
+    if (!coords) {
       return null;
     }
+    let length = coords.length;
+    while (--length) {
     /*[long, lat, aurora]*/
-    // Todo OTPIMISER
-    for (let coords of ovationMapCache) {
-      if (coords[0] === Math.round(long) && coords[1] === Math.round(lat)) {
-        console.log(coords);
-        return coords[2];
+      if (coords[length][0] === Math.round(long) && coords[length][1] === Math.round(lat)) {
+        console.log(coords[length]);
+        return coords[length][2];
       }
     }
   }
