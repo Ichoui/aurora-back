@@ -34,7 +34,6 @@ export class AuroraController {
   getOvation(
     @Query() coords?: { lat: number; lng: number },
   ): Observable<Promise<any>> {
-    console.log('controlo', coords);
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json',

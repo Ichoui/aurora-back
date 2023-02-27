@@ -124,9 +124,13 @@ export class AuroraService {
     if (!coords) {
       return null;
     }
-    let length = coords.length;
+    let length = coords.length; // tab index to decrement
+    /*[long, lat, aurora]*/
     while (--length) {
-      /*[long, lat, aurora]*/
+      if (coords[length][0] > 180) {
+        // Longitude 180+ dépasse de la map à droite, cela permet de revenir tout à gauche de la carte
+        coords[length][0] = coords[length][0] - 360;
+      }
       if (
         coords[length][0] === Math.round(long) &&
         coords[length][1] === Math.round(lat)
