@@ -42,9 +42,11 @@ export class AuroraService {
         const ovationMapCached = await this._cacheService.get(
           'ovationMapCache',
         );
-        if (ovationMapCached) {
+
+        if (ovationMapCached && !(body['long'] && body['lat'])) {
           return ovationMapCached;
         }
+
         const mappedCoords = [];
         let length = data['coordinates'].length;
         let nowcast = null;
@@ -101,17 +103,29 @@ export class AuroraService {
           nowcast: await this._getNowcastAurora(body['lng'], body['lat']),
         };
       case SWPC.FORECAST_SOLARWIND:
-        // TODO finaliser un jour ceci
-        // const finalData = []
-        // const d = data.map((e, i) => {
-        //     if (i === 0) {
-        //         finalData.push(e)
-        //     } else {
-        //         finalData.push(e)
-        //     }
-        // })z
-        console.log(data);
-        return data;
+        const keyFromFirstIndexValue = Object.values(data[0]);
+        let solarWind: unknown[] = [];
+        for (const value of Object.values(data)) {
+          // Associe un tableau de clef à un tableau de valeurs à chaque itération et l'ajoute à un tableau
+          solarWind.push(
+            keyFromFirstIndexValue.reduce((acc, key, index) => {
+              let val = value[index];
+              if (
+                key !== 'propagated_time_tag' &&
+                key !== 'time_tag' &&
+                key !== 'temperature'
+              ) {
+                // Transforme certaine valeur en Integer
+                // Si value n'existe pas (null), on retourne null (bt bz)
+                val = val ? parseFloat(value[index]) : value[index];
+              }
+              // @ts-ignore
+              return { ...acc, [key]: val };
+            }, {}),
+          );
+        }
+        solarWind.shift(); // Removing first index with keys
+        return solarWind;
       case SWPC.INSTANT_KP:
         return data[(data as unknown[]).length - 1];
       default:
