@@ -4,7 +4,7 @@ import { WeatherController } from './weather.controller';
 import { WeatherService } from './weather.service';
 
 @Module({
-  imports: [HttpModule.register({ timeout: 10000 })],
+  imports: [HttpModule.register({ timeout: 20000 })],
   controllers: [WeatherController],
   providers: [WeatherService],
 })

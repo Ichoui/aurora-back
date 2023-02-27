@@ -1,6 +1,5 @@
 import {
   Body,
-  CacheInterceptor,
   CacheKey,
   CacheTTL,
   Controller,
@@ -8,6 +7,7 @@ import {
   HttpCode,
   Logger,
   Post,
+  Query,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuroraService } from './aurora.service';
@@ -28,15 +28,18 @@ export class AuroraController {
   }
 
   @Get('/map/ovation')
-  // @UseInterceptors(CacheInterceptor)
   @CacheKey('ovationData')
   @CacheTTL(30 * 60000) // override TTL to 30 * 60000 milliseconds
   @HttpCode(200)
-  getOvation(): Observable<Promise<any>> {
+  getOvation(
+    @Query() coords?: { lat: number; lng: number },
+  ): Observable<Promise<any>> {
+    console.log('controlo', coords);
     return this._auroraService
       .getSwpcData$(
         'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json',
         SWPC.OVATION_MAP,
+        coords,
       )
       .pipe(
         catchError((err) => {

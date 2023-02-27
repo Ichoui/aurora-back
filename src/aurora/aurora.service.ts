@@ -21,7 +21,6 @@ export class AuroraService {
     swpcType: SWPC,
     body?: Record<string, unknown>,
   ): Observable<Promise<any>> {
-    console.log(url);
     return this._httpService
       .get(url)
       .pipe(map((r) => this._dataTreatment(r.data, swpcType, body)));
@@ -38,22 +37,18 @@ export class AuroraService {
     swpcType?: SWPC,
     body?: any,
   ): Promise<any> {
-    console.log('PTNNN', data);
     switch (swpcType) {
       case SWPC.OVATION_MAP:
         const ovationMapCached = await this._cacheService.get(
           'ovationMapCache',
         );
-        console.log('geee');
-        console.log(ovationMapCached);
         if (ovationMapCached) {
-          console.log(ovationMapCached);
           return ovationMapCached;
         }
         const mappedCoords = [];
         let length = data['coordinates'].length;
+        let nowcast = null;
         while (--length) {
-        // for (const coords of data['coordinates']) {
           let long = data['coordinates'][length][0];
           const lat = data['coordinates'][length][1];
           const nowcastAurora = data['coordinates'][length][2];
@@ -69,20 +64,30 @@ export class AuroraService {
               mappedCoords.push([long, lat, nowcastAurora]);
             }
           }
+
+          // Récupère le nowcast de l'utilisateur via ses long/lat ; Effectuer la recherche sur TOUT le tableau d'ovation
+          if (
+            long === Math.round(body['long']) &&
+            lat === Math.round(body['lat'])
+          ) {
+            nowcast = nowcastAurora;
+          }
         }
-        await this._cacheService.set(
-          'ovationMapCache',
-          mappedCoords,
-          this._ttl,
-        );
         await this._cacheService.set(
           'ovationFullForNowcast',
           data['coordinates'],
           this._ttl,
         );
-
-        console.log(await this._cacheService.get('ovationFullForNowcast'));
-        return mappedCoords;
+        await this._cacheService.set(
+          'ovationMapCache',
+          mappedCoords,
+          this._ttl,
+        );
+        if (body['long'] && body['lat']) {
+          return { nowcast };
+        } else {
+          return mappedCoords;
+        }
       case SWPC.FORECAST_SOLARCYCLE:
         return (data as unknown[]).map((e) => ({
           timeTag: e['time-tag'],
@@ -99,10 +104,10 @@ export class AuroraService {
         // const d = data.map((e, i) => {
         //     if (i === 0) {
         //         finalData.push(e)
-        //     } else {
+        //     } else {zzzz
         //         finalData.push(e)
         //     }
-        // })
+        // })z
         // console.log(data);
         return data;
       case SWPC.INSTANT_KP:
@@ -121,9 +126,11 @@ export class AuroraService {
     }
     let length = coords.length;
     while (--length) {
-    /*[long, lat, aurora]*/
-      if (coords[length][0] === Math.round(long) && coords[length][1] === Math.round(lat)) {
-        console.log(coords[length]);
+      /*[long, lat, aurora]*/
+      if (
+        coords[length][0] === Math.round(long) &&
+        coords[length][1] === Math.round(lat)
+      ) {
         return coords[length][2];
       }
     }

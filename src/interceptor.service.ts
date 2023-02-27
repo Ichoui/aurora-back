@@ -18,6 +18,6 @@ export class ReqInterceptor implements NestInterceptor {
           catchError(() => throwError(() => 'Intercept an error from 3rd API')),
         );
     }
-    return throwError(() => new BadRequestException('Not from aurora...'));
+    return throwError(() => new BadRequestException('Not from aurora...', { cause: new Error()}));
   }
 }

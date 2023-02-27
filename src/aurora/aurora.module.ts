@@ -4,7 +4,7 @@ import { HttpModule } from '@nestjs/axios';
 import { AuroraController } from './aurora.controller';
 
 @Module({
-  imports: [HttpModule.register({ timeout: 10000 })],
+  imports: [HttpModule.register({ timeout: 20000 })],
   controllers: [AuroraController],
   providers: [AuroraService],
 })
