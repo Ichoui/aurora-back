@@ -83,7 +83,9 @@ export class AuroraService {
           mappedCoords,
           this._ttl,
         );
+
         if (body['long'] && body['lat']) {
+          // Retourner nowcast quand présence de params long & lat sur la page 2
           return { nowcast };
         } else {
           return mappedCoords;
@@ -104,11 +106,11 @@ export class AuroraService {
         // const d = data.map((e, i) => {
         //     if (i === 0) {
         //         finalData.push(e)
-        //     } else {zzzz
+        //     } else {
         //         finalData.push(e)
         //     }
         // })z
-        // console.log(data);
+        console.log(data);
         return data;
       case SWPC.INSTANT_KP:
         return data[(data as unknown[]).length - 1];

@@ -108,7 +108,6 @@ export class AuroraController {
         coords,
       )
       .pipe(
-        tap((e) => console.log('ICI OK', e)),
         catchError((err) => {
           this.logger.error(err);
           throw 'An error happened on instant nowcast local API !';
