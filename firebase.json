@@ -1,4 +1,11 @@
 {
+  "headers": [ {
+    "source" : "index.html",
+    "headers" : [ {
+      "key" : "Access-Control-Allow-Origin",
+      "value" : "*"
+    } ]
+  }],
   "functions": [
     {
       "source": ".",
