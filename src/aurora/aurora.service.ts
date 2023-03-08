@@ -21,16 +21,24 @@ export class AuroraService {
     instantKp: any;
     nowcast: any;
   }> {
-    const auroraOvation$ = this._httpService.get(SERVICES_SWPC.OVATION_MAP).pipe(map(r => this._dataTreatment(r.data, SWPC.OVATION_MAP, body)));
+    const auroraOvation$ = this._httpService //
+      .get(SERVICES_SWPC.OVATION_MAP)
+      .pipe(map(r => this._dataTreatment(r.data, SWPC.OVATION_MAP, body)));
     const forecastSolarCycle$ = this._httpService
       .get(SERVICES_SWPC.FORECAST_SOLARCYCLE)
       .pipe(map(r => this._dataTreatment(r.data, SWPC.FORECAST_SOLARCYCLE)));
-    const forecastSolarWind$ = this._httpService.get(SWPC.FORECAST_SOLARWIND).pipe(map(r => this._dataTreatment(r.data, SWPC.FORECAST_SOLARWIND)));
-    const forecastKp$ = this._httpService.get(SERVICES_SWPC.FORECAST_KP).pipe(map(r => this._dataTreatment(r.data, SWPC.FORECAST_KP)));
+    const forecastSolarWind$ = this._httpService
+      .get(SERVICES_SWPC.FORECAST_SOLARWIND)
+      .pipe(map(r => this._dataTreatment(r.data, SWPC.FORECAST_SOLARWIND)));
+    const forecastKp$ = this._httpService //
+      .get(SERVICES_SWPC.FORECAST_KP)
+      .pipe(map(r => this._dataTreatment(r.data, SWPC.FORECAST_KP)));
     const forecastTwentySevenDays$ = this._httpService
       .get(SERVICES_SWPC.TWENTY_SEVEN_DAYS)
       .pipe(map(r => this._dataTreatment(r.data, SWPC.TWENTY_SEVEN_DAYS)));
-    const instantKp$ = this._httpService.get(SERVICES_SWPC.INSTANT_KP).pipe(map(r => this._dataTreatment(r.data, SWPC.INSTANT_KP)));
+    const instantKp$ = this._httpService //
+      .get(SERVICES_SWPC.INSTANT_KP)
+      .pipe(map(r => this._dataTreatment(r.data, SWPC.INSTANT_KP)));
 
     return Promise.all([
       firstValueFrom(auroraOvation$),
@@ -100,7 +108,7 @@ export class AuroraService {
 
         if (body['long'] && body['lat']) {
           // Retourner nowcast quand présence de params long & lat sur la page 2
-          return { nowcast };
+          return nowcast;
         } else {
           return mappedCoords;
         }
@@ -116,7 +124,7 @@ export class AuroraService {
         };
       case SWPC.FORECAST_SOLARWIND:
         const keyFromFirstIndexValue = Object.values(data[0]);
-          // TODO remove useless values like vx vy vz...
+        // TODO remove useless values like vx vy vz...
         let solarWind: unknown[] = [];
         for (const value of Object.values(data)) {
           // Associe un tableau de clef à un tableau de valeurs à chaque itération et l'ajoute à un tableau
@@ -136,10 +144,10 @@ export class AuroraService {
         solarWind.shift(); // Removing first index with keys
         return solarWind;
       case SWPC.FORECAST_KP:
-          // TODO Remove first index
+        // TODO Remove first index
         return data;
       case SWPC.INSTANT_KP:
-          // TODO Reformat with proper data
+        // TODO Reformat with proper data
         return data[(data as unknown[]).length - 1];
       default:
         return data;
