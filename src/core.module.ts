@@ -5,11 +5,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ReqInterceptor } from './interceptor.service';
 
 @Module({
-  imports: [
-    AuroraModule,
-    WeatherModule,
-    CacheModule.register({ isGlobal: true }),
-  ],
+  imports: [AuroraModule, WeatherModule, CacheModule.register({ isGlobal: true })],
   providers: [
     {
       provide: APP_INTERCEPTOR,

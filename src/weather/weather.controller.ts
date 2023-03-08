@@ -1,12 +1,4 @@
-import {
-  CacheInterceptor, CacheKey, CacheTTL,
-  Controller,
-  Get,
-  HttpCode,
-  Logger,
-  Query,
-  UseInterceptors,
-} from '@nestjs/common';
+import { CacheInterceptor, CacheKey, CacheTTL, Controller, Get, HttpCode, Logger, Query, UseInterceptors } from '@nestjs/common';
 import { ReqInterceptor } from '../interceptor.service';
 import { WeatherService } from './weather.service';
 import { AxiosResponse } from 'axios';
@@ -22,7 +14,7 @@ export class WeatherController {
   @HttpCode(200)
   getGeocode(@Query() params): Observable<AxiosResponse<any>> {
     return this._weatherService.reverseGeoCode$(params).pipe(
-      catchError((err) => {
+      catchError(err => {
         this.logger.error(err);
         throw 'An error happened with reverse geocode api !';
       }),
@@ -33,7 +25,7 @@ export class WeatherController {
   @HttpCode(200)
   getWeather(@Query() params): Observable<AxiosResponse<any>> {
     return this._weatherService.getWeather$(params).pipe(
-      catchError((err) => {
+      catchError(err => {
         this.logger.error(err);
         throw 'An error happened with weather api !';
       }),
