@@ -132,7 +132,7 @@ export class AuroraService {
               let val = value[index];
               if (key === 'temperature' || key === 'bx' || key === 'by' || key === 'vx' || key === 'vy' || key === 'vz') {
                 // @ts-ignore / values are not used
-                return {...acc}
+                return { ...acc };
               }
 
               if (key !== 'propagated_time_tag' && key !== 'time_tag' && key !== 'temperature') {
@@ -148,8 +148,31 @@ export class AuroraService {
         solarWind.shift(); // Removing first index with keys
         return solarWind;
       case SWPC.FORECAST_KP:
-        // TODO Remove first index and useless observed et noascale
-        return data;
+        const keyFromFirstIndexValueKp = Object.values(data[0]);
+        console.log(keyFromFirstIndexValueKp);
+        let forecastKp: unknown[] = [];
+        for (const value of Object.values(data)) {
+          // Associe un tableau de clef à un tableau de valeurs à chaque itération et l'ajoute à un tableau
+          forecastKp.push(
+            keyFromFirstIndexValueKp.reduce((acc, key, index) => {
+              let val = value[index];
+              if (key === 'noaa_scale') {
+                // @ts-ignore / noaa_scale is not used ; only predicted value are displayed
+                return { ...acc };
+              }
+              if (key === 'kp') {
+                // Si value n'existe pas (null), on retourne null (bt bz)
+                val = parseFloat(value[index]);
+              }
+
+              // @ts-ignore
+              return { ...acc, [key]: val };
+            }, {}),
+          );
+        }
+        forecastKp.shift(); // Removing first index with keys
+        return forecastKp.filter(f => f['observed'] === 'predicted').map(f => ({ kpIndex: f['kp'], timeTag: f['time_tag'] }));
+
       case SWPC.INSTANT_KP:
         return data[(data as unknown[]).length - 1];
       default:
