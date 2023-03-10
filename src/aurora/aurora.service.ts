@@ -124,13 +124,17 @@ export class AuroraService {
         };
       case SWPC.FORECAST_SOLARWIND:
         const keyFromFirstIndexValue = Object.values(data[0]);
-        // TODO remove useless values like vx vy vz...
         let solarWind: unknown[] = [];
         for (const value of Object.values(data)) {
           // Associe un tableau de clef à un tableau de valeurs à chaque itération et l'ajoute à un tableau
           solarWind.push(
             keyFromFirstIndexValue.reduce((acc, key, index) => {
               let val = value[index];
+              if (key === 'temperature' || key === 'bx' || key === 'by' || key === 'vx' || key === 'vy' || key === 'vz') {
+                // @ts-ignore / values are not used
+                return {...acc}
+              }
+
               if (key !== 'propagated_time_tag' && key !== 'time_tag' && key !== 'temperature') {
                 // Transforme certaine valeur en Integer
                 // Si value n'existe pas (null), on retourne null (bt bz)
@@ -144,10 +148,9 @@ export class AuroraService {
         solarWind.shift(); // Removing first index with keys
         return solarWind;
       case SWPC.FORECAST_KP:
-        // TODO Remove first index
+        // TODO Remove first index and useless observed et noascale
         return data;
       case SWPC.INSTANT_KP:
-        // TODO Reformat with proper data
         return data[(data as unknown[]).length - 1];
       default:
         return data;
