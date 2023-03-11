@@ -149,7 +149,6 @@ export class AuroraService {
         return solarWind;
       case SWPC.FORECAST_KP:
         const keyFromFirstIndexValueKp = Object.values(data[0]);
-        console.log(keyFromFirstIndexValueKp);
         let forecastKp: unknown[] = [];
         for (const value of Object.values(data)) {
           // Associe un tableau de clef à un tableau de valeurs à chaque itération et l'ajoute à un tableau
