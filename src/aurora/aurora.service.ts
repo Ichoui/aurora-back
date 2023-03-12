@@ -170,7 +170,7 @@ export class AuroraService {
           );
         }
         forecastKp.shift(); // Removing first index with keys
-        return forecastKp.filter(f => f['observed'] === 'predicted').map(f => ({ kpIndex: f['kp'], timeTag: f['time_tag'] }));
+        return forecastKp.filter(f => f['observed'] !== 'observed').map(f => ({ kpIndex: f['kp'], timeTag: f['time_tag'] }));
 
       case SWPC.INSTANT_KP:
         return data[(data as unknown[]).length - 1];
