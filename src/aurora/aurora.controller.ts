@@ -30,7 +30,7 @@ export class AuroraController {
     return from(this._auroraService.getAllSwpcDatas$(coords)).pipe(
       catchError(err => {
         this.logger.error(err);
-        throw 'An error happened on SWPC API !';
+        throw 'An error happened on NOAA SWPC API !';
       }),
     );
   }
@@ -43,7 +43,7 @@ export class AuroraController {
     return this._auroraService.getOneSwpcData$(SERVICES_SWPC.OVATION_MAP, SWPC.OVATION_MAP, coords).pipe(
       catchError(err => {
         this.logger.error(err);
-        throw 'An error happened on ovation map SWPC API !';
+        throw 'An error happened on ovation map NOAA SWPC API !';
       }),
     );
   }
@@ -56,7 +56,7 @@ export class AuroraController {
       .pipe(
         catchError(err => {
           this.logger.error(err);
-          throw 'An error happened on solarCycle SWPC API !';
+          throw 'An error happened on solarCycle NOAA SWPC API !';
         }),
       );
   }
@@ -69,7 +69,7 @@ export class AuroraController {
       .pipe(
         catchError(err => {
           this.logger.error(err);
-          throw 'An error happened on solarWind SWPC API !';
+          throw 'An error happened on solarWind NOAA SWPC API !';
         }),
       );
   }
@@ -80,7 +80,7 @@ export class AuroraController {
     return this._auroraService.getOneSwpcData$(SERVICES_SWPC.INSTANT_KP, SWPC.INSTANT_KP).pipe(
       catchError(err => {
         this.logger.error(err);
-        throw 'An error happened on KPi 1month SWPC API !';
+        throw 'An error happened on KPi 1 month NOAA SWPC API !';
       }),
     );
   }
@@ -104,7 +104,7 @@ export class AuroraController {
     return this._auroraService.getOneSwpcData$(SERVICES_SWPC.POLE_NORTH, SWPC.POLE_NORTH).pipe(
       catchError(err => {
         this.logger.error(err);
-        throw 'An error happened on map pole north SWPC API !';
+        throw 'An error happened on map pole north NOAA SWPC API !';
       }),
     );
   }
@@ -115,7 +115,7 @@ export class AuroraController {
     return this._auroraService.getOneSwpcData$(SERVICES_SWPC.POLE_SOUTH, SWPC.POLE_SOUTH).pipe(
       catchError(err => {
         this.logger.error(err);
-        throw 'An error happened on map pole south SWPC API !';
+        throw 'An error happened on map pole south NOAA SWPC API !';
       }),
     );
   }
@@ -126,7 +126,7 @@ export class AuroraController {
     return this._auroraService.getOneSwpcData$(SERVICES_SWPC.TWENTY_SEVEN_DAYS, SWPC.TWENTY_SEVEN_DAYS).pipe(
       catchError(err => {
         this.logger.error(err);
-        throw 'An error happened on 27 days SWPC API !';
+        throw 'An error happened on 27 days NOAA SWPC API !';
       }),
     );
   }
