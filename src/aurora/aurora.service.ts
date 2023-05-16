@@ -19,11 +19,7 @@ export class AuroraService {
     forecastKp: any;
     forecastTwentySevenDays: any;
     instantKp: any;
-    nowcast: any;
   }> {
-    const auroraOvation$ = this._httpService //
-      .get(SERVICES_SWPC.OVATION_MAP)
-      .pipe(map(r => this._dataTreatment(r.data, SWPC.OVATION_MAP, body)));
     const forecastSolarCycle$ = this._httpService
       .get(SERVICES_SWPC.FORECAST_SOLARCYCLE)
       .pipe(map(r => this._dataTreatment(r.data, SWPC.FORECAST_SOLARCYCLE)));
@@ -41,15 +37,13 @@ export class AuroraService {
       .pipe(map(r => this._dataTreatment(r.data, SWPC.INSTANT_KP)));
 
     return Promise.all([
-      firstValueFrom(auroraOvation$),
       firstValueFrom(forecastSolarCycle$),
       firstValueFrom(forecastSolarWind$),
       firstValueFrom(forecastKp$),
       firstValueFrom(forecastTwentySevenDays$),
       firstValueFrom(instantKp$),
-    ]).then(([auroraOvation, forecastSolarCycle, forecastSolarWind, forecastKp, forecastTwentySevenDays, instantKp]) => {
+    ]).then(([forecastSolarCycle, forecastSolarWind, forecastKp, forecastTwentySevenDays, instantKp]) => {
       return {
-        nowcast: auroraOvation,
         forecastSolarCycle,
         forecastSolarWind,
         forecastKp,

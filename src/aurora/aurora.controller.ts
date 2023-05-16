@@ -25,7 +25,6 @@ export class AuroraController {
     forecastKp: any;
     forecastTwentySevenDays: any;
     instantKp: any;
-    nowcast: any;
   }> {
     return from(this._auroraService.getAllSwpcDatas$(coords)).pipe(
       catchError(err => {
