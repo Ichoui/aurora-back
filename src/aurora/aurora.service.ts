@@ -13,7 +13,7 @@ export class AuroraService {
     return 'Hello Aurora Chasers!';
   }
 
-  getAllSwpcDatas$(body?: Record<string, unknown>): Promise<{
+  getAllSwpcDatas$(): Promise<{
     forecastSolarCycle: any;
     forecastSolarWind: any;
     forecastKp: any;
@@ -73,12 +73,12 @@ export class AuroraService {
         }
 
         const mappedCoords = [];
-        let length = data['coordinates'].length;
+        let lengthCoords = data['coordinates'].length;
         let nowcast = null;
-        while (--length) {
-          let long = data['coordinates'][length][0];
-          const lat = data['coordinates'][length][1];
-          const nowcastAurora = data['coordinates'][length][2];
+        while (--lengthCoords) {
+          let long = data['coordinates'][lengthCoords][0];
+          const lat = data['coordinates'][lengthCoords][1];
+          const nowcastAurora = data['coordinates'][lengthCoords][2];
           if (long > 180) {
             // Longitude 180+ dépasse de la map à droite, cela permet de revenir tout à gauche de la carte
             long = long - 360;
@@ -107,11 +107,19 @@ export class AuroraService {
           return mappedCoords;
         }
       case SWPC.FORECAST_SOLARCYCLE:
-        return (data as unknown[]).map(e => ({
-          timeTag: e['time-tag'],
-          predictedSsn: e['predicted_ssn'],
-          predictedSolarFlux: e['predicted_f10.7'],
-        }));
+        let lengthSolar = (data as unknown[]).length;
+        const solarData = [];
+        while (--lengthSolar) {
+          const d = (data as unknown[])[lengthSolar];
+          if (lengthSolar % 2 === 0) {
+            solarData.push({
+              timeTag: d['time-tag'],
+              predictedSsn: d['predicted_ssn'],
+              predictedSolarFlux: d['predicted_f10.7'],
+            });
+          }
+        }
+        return solarData.reverse();
       case SWPC.INSTANT_NOWCAST:
         return {
           nowcast: await this._getNowcastAurora(body['lng'], body['lat']),
@@ -165,7 +173,6 @@ export class AuroraService {
         }
         forecastKp.shift(); // Removing first index with keys
         return forecastKp.filter(f => f['observed'] !== 'observed').map(f => ({ kpIndex: f['kp'], timeTag: f['time_tag'] }));
-
       case SWPC.INSTANT_KP:
         return data[(data as unknown[]).length - 1];
       default:
