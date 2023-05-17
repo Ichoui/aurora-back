@@ -13,12 +13,12 @@ export class AuroraService {
     return 'Hello Aurora Chasers!';
   }
 
-  getAllSwpcDatas$(): Promise<{
+  getAllSwpcDatas$(coords: { lat: number; lng: number }): Promise<{
     forecastSolarCycle: any;
     forecastSolarWind: any;
     forecastKp: any;
     forecastTwentySevenDays: any;
-    instantKp: any;
+    instantKp: any
   }> {
     const forecastSolarCycle$ = this._httpService
       .get(SERVICES_SWPC.FORECAST_SOLARCYCLE)
