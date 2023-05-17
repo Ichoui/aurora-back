@@ -12,6 +12,6 @@ export class WeatherService {
   }
 
   getWeather$(params): Observable<AxiosResponse<any>> {
-    return this._httpService.get('https://api.openweathermap.org/data/2.5/onecall', { params }).pipe(map(res => res.data));
+    return this._httpService.get('https://api.openweathermap.org/data/3.0/onecall', { params }).pipe(map(res => res.data));
   }
 }
