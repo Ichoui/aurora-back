@@ -1,6 +1,7 @@
 {
   "name": "aurora-proxy-nest",
   "version": "0.0.1",
+  "licence":"GPL-3.0-only",
   "author": "Morgan N aka Ichoui",
   "description": "API for Aurorapp - Northern Light app, available on the Play Store only, for Aurora Borealis",
   "private": true,
