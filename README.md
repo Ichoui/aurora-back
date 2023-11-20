@@ -9,7 +9,8 @@
 `npm run start`<br>
 
 > Deploy in production<br>
-> Make a build first in production mode, then deploy to firebase with `npm run deploy`
+> Make a build first in production mode, then deploy to firebase<br>
+> `npm run deploy`
 
 ## Deprecated
 
