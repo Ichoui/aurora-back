@@ -1,4 +1,6 @@
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+
+import { Inject, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map, Observable } from 'rxjs';
 import { SERVICES_SWPC, SWPC } from './swpc.model';
@@ -7,18 +9,21 @@ import { Cache } from 'cache-manager';
 @Injectable()
 export class AuroraService {
   private readonly _ttl = 60000 * 30; // 30 minutes, in millisecond
-  constructor(private readonly _httpService: HttpService, @Inject(CACHE_MANAGER) private _cacheService: Cache) {}
+  constructor(
+    private readonly _httpService: HttpService,
+    @Inject(CACHE_MANAGER) private _cacheService: Cache,
+  ) {}
 
   auroraPath$(): string {
     return 'Hello Aurora Chasers!';
   }
 
-  getAllSwpcDatas$(coords: { lat: number; lng: number }): Promise<{
+  async getAllSwpcDatas$(coords: { lat: number; lng: number }): Promise<{
     forecastSolarCycle: any;
     forecastSolarWind: any;
     forecastKp: any;
     forecastTwentySevenDays: any;
-    instantKp: any
+    instantKp: any;
   }> {
     const forecastSolarCycle$ = this._httpService
       .get(SERVICES_SWPC.FORECAST_SOLARCYCLE)
@@ -36,21 +41,21 @@ export class AuroraService {
       .get(SERVICES_SWPC.INSTANT_KP)
       .pipe(map(r => this._dataTreatment(r.data, SWPC.INSTANT_KP)));
 
-    return Promise.all([
+    let result0 = await Promise.all([
       firstValueFrom(forecastSolarCycle$),
       firstValueFrom(forecastSolarWind$),
       firstValueFrom(forecastKp$),
       firstValueFrom(forecastTwentySevenDays$),
       firstValueFrom(instantKp$),
-    ]).then(([forecastSolarCycle, forecastSolarWind, forecastKp, forecastTwentySevenDays, instantKp]) => {
-      return {
-        forecastSolarCycle,
-        forecastSolarWind,
-        forecastKp,
-        forecastTwentySevenDays,
-        instantKp,
-      };
-    });
+    ]);
+    const [forecastSolarCycle, forecastSolarWind, forecastKp, forecastTwentySevenDays, instantKp] = result0;
+    return {
+      forecastSolarCycle,
+      forecastSolarWind,
+      forecastKp,
+      forecastTwentySevenDays,
+      instantKp,
+    };
   }
 
   getOneSwpcData$(url: string, swpcType: SWPC, body?: Record<string, unknown>): Observable<Promise<any>> {
@@ -180,7 +185,7 @@ export class AuroraService {
     }
   }
 
-  private async _getNowcastAurora(long, lat): Promise<number> {
+  private async _getNowcastAurora(long: number, lat: number): Promise<number> {
     const coords = (await this._cacheService.get('ovationFullForNowcast')) as unknown[];
     if (!coords) {
       return null;

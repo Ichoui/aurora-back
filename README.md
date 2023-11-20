@@ -1,27 +1,18 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
-
+# Aurora Back
 ## Description
 
-[NESTxFIREBASE](https://reza-rahmati.medium.com/setup-nest-and-firebase-functions-in-a-new-project-631ba1435289) 
-
-## Installation
-
-```bash
-$ npm install
-```
+[NESTxFIREBASE](https://reza-rahmati.medium.com/setup-nest-and-firebase-functions-in-a-new-project-631ba1435289)
 
 ## Running the app
 
-```bash
-# development
-$ npm run start:fb
+> Build app then run the firebase function emulator, hot realod included!<br>Can be logged with console.log / new Logger()<br>
+`npm run start`<br>
 
-# watch mode
-$ npm run start:dev
+> Deploy in production<br>
+> Make a build first in production mode, then deploy to firebase with `npm run deploy`
 
-# production mode
-$ npm run start:prod
-```
+## Deprecated
 
+> Watch mode for development<br>
+> Update: i think it can't be used with firebase method "onRequest" <br>
+`npm run start`

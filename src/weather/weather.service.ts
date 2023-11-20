@@ -7,11 +7,11 @@ import { AxiosResponse } from 'axios';
 export class WeatherService {
   constructor(private readonly _httpService: HttpService) {}
 
-  reverseGeoCode$(params): Observable<AxiosResponse<any>> {
+  reverseGeoCode$(params: any): Observable<AxiosResponse<any>> {
     return this._httpService.get('https://api.openweathermap.org/geo/1.0/reverse', { params }).pipe(map(res => res.data));
   }
 
-  getWeather$(params): Observable<AxiosResponse<any>> {
+  getWeather$(params: any): Observable<AxiosResponse<any>> {
     return this._httpService.get('https://api.openweathermap.org/data/3.0/onecall', { params }).pipe(map(res => res.data));
   }
 }
