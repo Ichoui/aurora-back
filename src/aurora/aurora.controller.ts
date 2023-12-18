@@ -1,10 +1,9 @@
 import { Body, Controller, Get, HttpCode, Logger, Post, Query, UseInterceptors } from '@nestjs/common';
 import { AuroraService } from './aurora.service';
-import { catchError, from, Observable } from 'rxjs';
+import { catchError, first, from, Observable } from 'rxjs';
 import { ReqInterceptor } from '../interceptor.service';
 import { SERVICES_SWPC, SWPC } from './swpc.model';
-import {CacheKey, CacheTTL} from '@nestjs/cache-manager'
-
+import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
 @UseInterceptors(ReqInterceptor)
 @Controller()
@@ -52,27 +51,34 @@ export class AuroraController {
   @Get('/forecast/solarcycle')
   @HttpCode(200)
   getSolarCycle$(): Observable<Promise<any>> {
-    return this._auroraService
-      .getOneSwpcData$(SERVICES_SWPC.FORECAST_SOLARCYCLE, SWPC.FORECAST_SOLARCYCLE)
-      .pipe(
-        catchError(err => {
-          this.logger.error(err);
-          throw 'An error happened on solarCycle NOAA SWPC API !';
-        }),
-      );
+    return this._auroraService.getOneSwpcData$(SERVICES_SWPC.FORECAST_SOLARCYCLE, SWPC.FORECAST_SOLARCYCLE).pipe(
+      catchError(err => {
+        this.logger.error(err);
+        throw 'An error happened on solarCycle NOAA SWPC API !';
+      }),
+    );
   }
 
-  @Get('/forecast/solarwind')
+  @Get('/forecast/solarwind1h')
   @HttpCode(200)
-  getSolarWind$(): Observable<Promise<any>> {
-    return this._auroraService
-      .getOneSwpcData$(SERVICES_SWPC.FORECAST_SOLARWIND, SWPC.FORECAST_SOLARWIND)
-      .pipe(
-        catchError(err => {
-          this.logger.error(err);
-          throw 'An error happened on solarWind NOAA SWPC API !';
-        }),
-      );
+  getSolarWind1h$(): Observable<Promise<any>> {
+    return this._auroraService.getOneSwpcData$(SERVICES_SWPC.FORECAST_SOLARWIND_1H, SWPC.FORECAST_SOLARWIND_1H).pipe(
+      catchError(err => {
+        this.logger.error(err);
+        throw 'An error happened on solarWind 1hour NOAA SWPC API !';
+      }),
+    );
+  }
+
+  @Get('/forecast/solarwind7d')
+  @HttpCode(200)
+  getSolarWind7d$(@Query() firstDate: string): Observable<Promise<any>> {
+    return this._auroraService.getOneSwpcData$(SERVICES_SWPC.FORECAST_SOLARWIND_7D, SWPC.FORECAST_SOLARWIND_7D, { date: firstDate }).pipe(
+      catchError(err => {
+        this.logger.error(err);
+        throw 'An error happened on solarWind 7 days NOAA SWPC API !';
+      }),
+    );
   }
 
   @Get('/instant/kp')
@@ -89,14 +95,12 @@ export class AuroraController {
   @Post('/instant/nowcast')
   @HttpCode(200)
   postNowcast$(@Body() coords: { lat: number; lng: number }): Observable<Promise<number>> {
-    return this._auroraService
-      .getOneSwpcData$(SERVICES_SWPC.INSTANT_NOWCAST, SWPC.INSTANT_NOWCAST, coords)
-      .pipe(
-        catchError(err => {
-          this.logger.error(err);
-          throw 'An error happened on instant nowcast local API !';
-        }),
-      );
+    return this._auroraService.getOneSwpcData$(SERVICES_SWPC.INSTANT_NOWCAST, SWPC.INSTANT_NOWCAST, coords).pipe(
+      catchError(err => {
+        this.logger.error(err);
+        throw 'An error happened on instant nowcast local API !';
+      }),
+    );
   }
 
   @Get('/map/polenorth')

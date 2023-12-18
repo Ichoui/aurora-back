@@ -29,8 +29,8 @@ export class AuroraService {
       .get(SERVICES_SWPC.FORECAST_SOLARCYCLE)
       .pipe(map(r => this._dataTreatment(r.data, SWPC.FORECAST_SOLARCYCLE)));
     const forecastSolarWind$ = this._httpService
-      .get(SERVICES_SWPC.FORECAST_SOLARWIND)
-      .pipe(map(r => this._dataTreatment(r.data, SWPC.FORECAST_SOLARWIND)));
+      .get(SERVICES_SWPC.FORECAST_SOLARWIND_1H)
+      .pipe(map(r => this._dataTreatment(r.data, SWPC.FORECAST_SOLARWIND_1H)));
     const forecastKp$ = this._httpService //
       .get(SERVICES_SWPC.FORECAST_KP)
       .pipe(map(r => this._dataTreatment(r.data, SWPC.FORECAST_KP)));
@@ -129,13 +129,13 @@ export class AuroraService {
         return {
           nowcast: await this._getNowcastAurora(body['lng'], body['lat']),
         };
-      case SWPC.FORECAST_SOLARWIND:
-        const keyFromFirstIndexValue = Object.values(data[0]);
-        let solarWind: unknown[] = [];
+      case SWPC.FORECAST_SOLARWIND_1H:
+        const keyFromFirstIndexValue1h = Object.values(data[0]);
+        let solarWind1h: unknown[] = [];
         for (const value of Object.values(data)) {
           // Associe un tableau de clef à un tableau de valeurs à chaque itération et l'ajoute à un tableau
-          solarWind.push(
-            keyFromFirstIndexValue.reduce((acc, key, index) => {
+          solarWind1h.push(
+            keyFromFirstIndexValue1h.reduce((acc, key, index) => {
               let val = value[index];
               if (key === 'temperature' || key === 'bx' || key === 'by' || key === 'vx' || key === 'vy' || key === 'vz') {
                 // @ts-ignore / values are not used
@@ -152,8 +152,35 @@ export class AuroraService {
             }, {}),
           );
         }
-        solarWind.shift(); // Removing first index with keys
-        return solarWind;
+        solarWind1h.shift(); // Removing first index with keys
+        return solarWind1h;
+      case SWPC.FORECAST_SOLARWIND_7D:
+        const keyFromFirstIndexValue7d = Object.values(data[0]);
+        let solarWind7d: unknown[] = [];
+
+        const firstDate = new Date(body.date['firstDate']).toUTCString();
+        const findMinIndex = Object.values(data).findIndex((e, i) => new Date(e[0]).toUTCString() === firstDate); // trouver l'horaire mini et son index minimum dans le tableau et garder tout les index supérieur
+        for (let i = 0; i < Object.values(data).length; i++) {
+          if (i >= findMinIndex) {
+            const value = Object.values(data)[i];
+            if (new Date(value[0]).getMinutes() % 5 === 0) {
+              // Associe un tableau de clef à un tableau de valeurs à chaque itération et l'ajoute à un tableau
+              solarWind7d.push(
+                keyFromFirstIndexValue7d.reduce((acc, key, index) => {
+                  let val = value[index];
+                  if (key !== 'speed' && key !== 'time_tag') {
+                    // @ts-ignore / values are not used
+                    return { ...acc };
+                  }
+                  // @ts-ignore
+                  return { ...acc, [key]: val };
+                }, {}),
+              );
+            }
+          }
+        }
+        solarWind7d.shift(); // Removing first index with keys
+        return solarWind7d;
       case SWPC.FORECAST_KP:
         const keyFromFirstIndexValueKp = Object.values(data[0]);
         let forecastKp: unknown[] = [];
