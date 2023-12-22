@@ -8,7 +8,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 @Injectable()
 export class CityService {
   constructor(@Inject(CACHE_MANAGER) private _cacheService: Cache) {}
-  private readonly _ttl = 60000 * 60; // 60 minutes, in millisecond
+  private readonly _ttl = 60000 * 120; // 120 minutes, in millisecond
 
   findCorrespondingCities$(cities: City[], search: string): City[] {
     if (search?.length > 2) {
