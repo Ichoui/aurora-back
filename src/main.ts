@@ -12,7 +12,6 @@ import * as process from 'process';
 const server: express.Express = express();
 
 async function createNestServer(expressInstance: express.Express) {
-
   const defaultWinstonLoggerOptions: winston.LoggerOptions = {
     format: winston.format.combine(
       winston.format.timestamp(),

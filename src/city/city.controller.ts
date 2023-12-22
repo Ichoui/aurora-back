@@ -1,7 +1,7 @@
 import { Controller, Get, HttpCode, Logger, Query, UseInterceptors } from '@nestjs/common';
 import { ReqInterceptor } from '../interceptor.service';
 import { CityService } from './city.service';
-import { catchError, map, Observable } from 'rxjs';
+import { catchError, from, map, Observable } from 'rxjs';
 import { City } from '../interfaces/city.interface';
 
 @UseInterceptors(ReqInterceptor)
@@ -13,7 +13,7 @@ export class CityController {
   @Get('/city')
   @HttpCode(200)
   getGeocode(@Query() params: { search: string }): Observable<City[]> {
-    return this._cityService.parseCitiesJson$().pipe(
+    return from(this._cityService.parseCitiesJson$()).pipe(
       map(cities => this._cityService.findCorrespondingCities$(cities, params.search)),
       catchError(err => {
         this.logger.error(err);

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, Logger, Post, Query, UseInterceptors } from '@nestjs/common';
 import { AuroraService } from './aurora.service';
-import { catchError, first, from, Observable } from 'rxjs';
+import { catchError, from, Observable } from 'rxjs';
 import { ReqInterceptor } from '../interceptor.service';
 import { SERVICES_SWPC, SWPC } from './swpc.model';
 import { CacheKey, CacheTTL } from '@nestjs/cache-manager';

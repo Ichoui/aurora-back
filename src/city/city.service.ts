@@ -1,29 +1,35 @@
-import { Injectable } from '@nestjs/common';
-import { Observable, of } from 'rxjs';
+import { Inject, Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { City } from '../interfaces/city.interface';
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class CityService {
-  constructor() {}
+  constructor(@Inject(CACHE_MANAGER) private _cacheService: Cache) {}
+  private readonly _ttl = 60000 * 60; // 60 minutes, in millisecond
 
   findCorrespondingCities$(cities: City[], search: string): City[] {
     if (search?.length > 2) {
-      console.log(this._removeAccents(search));
       const searchFormatted = this._removeAccents(search).toLowerCase();
       return cities.filter(c => this._removeAccents(c.name).toLowerCase().includes(searchFormatted));
     }
     return null;
   }
 
-  parseCitiesJson$(): Observable<City[]> {
-    try {
-      const filePath = path.join(process.cwd(), './src/city/cities.json');
-      const configFIle = fs.readFileSync(filePath, 'utf-8').toString();
-      // @ts-ignore
-      return of(JSON.parse(configFIle));
-    } catch (err) {}
+  async parseCitiesJson$(): Promise<City[]> {
+    return this._cacheService.get('cities').then(c => {
+      if (c) {
+        return c;
+      } else {
+        const filePath = path.join(process.cwd(), './src/city/cities.json');
+        const configFIle = fs.readFileSync(filePath, 'utf-8').toString();
+        const citiesJson = JSON.parse(configFIle);
+        this._cacheService.set('cities', citiesJson, this._ttl);
+        return citiesJson;
+      }
+    });
   }
 
   private _removeAccents(strAccent: string): string {
