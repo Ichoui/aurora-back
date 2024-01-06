@@ -41,6 +41,7 @@ async function createNestServer(expressInstance: express.Express) {
 
   app.use(json({ limit: '75mb' }));
   app.use(urlencoded({ extended: true, limit: '75mb' }));
+  // app.use('/assets', express.static(__dirname + '/src/assets')); //Serves resources from public folder
 
   return app.init();
 }
