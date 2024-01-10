@@ -8,8 +8,16 @@ import { CityModule } from './city/city.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import ormconfig from '../ormconfig';
 
+// const ENV = process.env.NODE_ENV;
 @Module({
-  imports: [AuroraModule, WeatherModule, CityModule, CacheModule.register({ isGlobal: true }), TypeOrmModule.forRoot(ormconfig)],
+  imports: [
+    AuroraModule,
+    WeatherModule,
+    CityModule,
+    CacheModule.register({ isGlobal: true }),
+    TypeOrmModule.forRoot(ormconfig),
+    // ConfigModule.forRoot({ envFilePath: !ENV ? '.env' : `.env.${ENV}` }),
+  ],
   providers: [
     {
       provide: APP_INTERCEPTOR,

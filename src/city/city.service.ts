@@ -5,7 +5,6 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CityEntity } from './city.entity';
 import { Repository } from 'typeorm';
-import { CityDto } from './city.dto';
 import { City } from '../interfaces/city.interface';
 import * as path from 'path';
 
@@ -31,7 +30,9 @@ export class CityService {
     }
   }
 
-  // Remove below 1 week after deployed + remove cache
+  /**
+   * @deprecated to be remove
+   * */
   oldFindCorrespondingCities$(cities: City[], search: string): City[] {
     if (search?.length > 2) {
       const searchFormatted = this._removeAccents(search).toLowerCase();
@@ -40,6 +41,10 @@ export class CityService {
     return null;
   }
 
+  /**
+   * @deprecated
+   * don't forget ro remove cache
+   * */
   async parseCitiesJson$(): Promise<City[]> {
     return this._cacheService.get('cities').then(c => {
       if (c) {
@@ -54,6 +59,9 @@ export class CityService {
     });
   }
 
+  /**
+   * @deprecated
+   * */
   private _removeAccents(strAccent: string): string {
     const strAccentsSplitted = strAccent.split('');
 

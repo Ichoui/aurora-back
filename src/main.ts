@@ -5,9 +5,9 @@ import { json, urlencoded } from 'express';
 import { CoreModule } from './core.module';
 import { HttpsFunction, onRequest } from 'firebase-functions/v2/https';
 import * as winston from 'winston';
-import { WinstonModule } from 'nest-winston';
-import { Logger } from '@nestjs/common';
 import * as process from 'process';
+import { WinstonModule } from 'nest-winston';
+import { error, info } from 'firebase-functions/logger';
 
 const server: express.Express = express();
 
@@ -41,13 +41,12 @@ async function createNestServer(expressInstance: express.Express) {
 
   app.use(json({ limit: '75mb' }));
   app.use(urlencoded({ extended: true, limit: '75mb' }));
-  // app.use('/assets', express.static(__dirname + '/src/assets')); //Serves resources from public folder
 
   return app.init();
 }
 
 createNestServer(server)
-  .then(() => Logger.log('Les Aurores sont prêtes 🚀'))
-  .catch(err => Logger.error('Erreur depuis main.ts', err));
+  .then(() => info('Les Aurores sont prêtes 🚀'))
+  .catch(err => error('Erreur depuis main.ts', err));
 
 export const aurora: HttpsFunction = onRequest(server);
