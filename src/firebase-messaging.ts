@@ -5,10 +5,14 @@ export const firebaseMessaging = () => {
   admin.initializeApp({ credential: admin.credential.applicationDefault() });
   console.log('foot');
   // https://firebase.google.com/docs/admin/setup?hl=fr#initialize_the_sdk_in_non-google_environments
-  // TODO Attention, il y a une commande pour créer une variable d'environnement
+  // TODO Attention, il y a une commande pour créer une variable d'environnement <-- IL FAUT SCRIPTER CA !!!!
   // Ne jamais push ces clefs sur git --> documenter ca quelque part
   //TODO  Gérer le changement de prod à dév (script npm?)
 
+    // https://firebase.google.com/docs/functions/schedule-functions?hl=fr&gen=2nd$
+    // ou node-cron
+    // voir si quand la fonction s'éteint, ça trigger quand même.... :grimace:
+    // Faudra peut être jouer un script bidon sur le serveur OVH autrement ... :o
 
     // setInterval(callIntervalKp, 3600000)
     // setInterval(searchForExpiredTokens, 60*24)

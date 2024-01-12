@@ -12,6 +12,10 @@
 > Make a build first in production mode, then deploy to firebase<br>
 > `npm run deploy`
 
+## Warning
+
+Never git files in folder ./environements/*
+
 ## Deprecated
 
 > Watch mode for development<br>

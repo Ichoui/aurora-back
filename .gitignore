@@ -40,3 +40,4 @@ lerna-debug.log*
 /.env.prod
 !/aurora-sdk.prod.json
 /aurora-sdk.prod.json
+!/environments/
