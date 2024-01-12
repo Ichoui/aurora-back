@@ -35,9 +35,7 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 !/.env
-!/.env.prod
 /.env
-/.env.prod
-!/aurora-sdk.prod.json
-/aurora-sdk.prod.json
 !/environments/
+!/environments/**/*
+/environments/**/*
