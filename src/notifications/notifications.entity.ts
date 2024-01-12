@@ -1,21 +1,18 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({
-  name: 'cities',
+  name: 'deviceRegistered',
 })
-export class CityEntity extends BaseEntity {
+export class NotificationsEntity extends BaseEntity {
   @PrimaryGeneratedColumn('rowid')
   id: number;
 
   @Column()
-  name: string;
+  deviceUuid: string;
 
   @Column()
-  countryCode: string;
+  token: string;
 
   @Column()
-  lat: string;
-
-  @Column()
-  long: string;
+  timestamp: Date;
 }

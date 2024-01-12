@@ -8,6 +8,7 @@ import * as winston from 'winston';
 import * as process from 'process';
 import { WinstonModule } from 'nest-winston';
 import { error, info } from 'firebase-functions/logger';
+import { firebaseMessaging } from './firebase-messaging';
 
 const server: express.Express = express();
 
@@ -46,6 +47,7 @@ async function createNestServer(expressInstance: express.Express) {
 }
 
 createNestServer(server)
+  .then(() => firebaseMessaging())
   .then(() => info('Les Aurores sont prêtes 🚀'))
   .catch(err => error('Erreur depuis main.ts', err));
 

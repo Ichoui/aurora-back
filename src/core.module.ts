@@ -7,6 +7,7 @@ import { ReqInterceptor } from './interceptor.service';
 import { CityModule } from './city/city.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import ormconfig from '../ormconfig';
+import { NotificationsModule } from './notifications/notifications.module';
 
 // const ENV = process.env.NODE_ENV;
 @Module({
@@ -14,6 +15,7 @@ import ormconfig from '../ormconfig';
     AuroraModule,
     WeatherModule,
     CityModule,
+    NotificationsModule,
     CacheModule.register({ isGlobal: true }),
     TypeOrmModule.forRoot(ormconfig),
     // ConfigModule.forRoot({ envFilePath: !ENV ? '.env' : `.env.${ENV}` }),
