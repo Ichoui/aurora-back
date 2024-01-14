@@ -9,7 +9,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import ormconfig from '../ormconfig';
 import { NotificationsModule } from './notifications/notifications.module';
 
-// const ENV = process.env.NODE_ENV;
 @Module({
   imports: [
     AuroraModule,
@@ -18,7 +17,6 @@ import { NotificationsModule } from './notifications/notifications.module';
     NotificationsModule,
     CacheModule.register({ isGlobal: true }),
     TypeOrmModule.forRoot(ormconfig),
-    // ConfigModule.forRoot({ envFilePath: !ENV ? '.env' : `.env.${ENV}` }),
   ],
   providers: [
     {

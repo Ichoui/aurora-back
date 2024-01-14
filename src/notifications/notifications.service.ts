@@ -13,23 +13,20 @@ export class NotificationsService {
   ) {}
 
   private _getAllRegistrationTokens(): string[] {
-    // TODO faire requête en base qui cherche tous les tokens
+    // TODO faire requête en base qui cherche tous les tokens ! this function woooooooooorks :)
     return [
-      '',
+      'fxauFAf8Rf-ew_tgzW0Id3:APA91bECIoSMPSPaCixTz1UBSqmnAMtbCsNK_JsYVs42dV9kE2vo1LxouocFr-zJ6JGUdnn-1VuA48CPmEFMlwujzo2IuYRPk5luRgitPxdX9k4bEQszZw80GLGECrPho6Sof9zs-3OG',
+      'cM-Evi0HSfSMKgqw6QPvhG:APA91bF_077o8hv6AuAf3wUWQabajStXK1cTPnDhe6MpFIBXDHTpxYscQMoUpIFBxwCYmoyylUL9-rani7BHBCo6Xr9w7oeo6ZO-FcUvHjv7DA-5rY_D_do-Ti3Z8-uyS0izGEVTvd5p',
     ];
   }
 
-  async notificationsKp(): Promise<void> {
+  async sendNotification(body: { title: string; description: string }): Promise<void> {
     console.log(process.env.project);
-    // Gérer la langue
-    const notification = {
-      title: 'Aurorapp',
-      body: 'allez le foot',
-    };
 
+    // Gérer la langue
     return await admin
       .messaging()
-      .sendEachForMulticast({ notification, tokens: this._getAllRegistrationTokens() })
+      .sendEachForMulticast({ notification: { title: body.title, body: body.description }, tokens: this._getAllRegistrationTokens() })
       .then(e => console.log(e)); // what about the return ?
   }
 

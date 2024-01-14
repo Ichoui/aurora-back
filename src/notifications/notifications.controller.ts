@@ -10,17 +10,16 @@ import { error } from 'firebase-functions/logger';
 export class NotificationsController {
   constructor(private readonly _notificationsService: NotificationsService) {}
 
-  @Post('/notification/kp')
+  @Post('/notification')
   @HttpCode(200)
-  notificationKp(@Body() body: any): Promise<void> {
+  async sendNotification(@Body() body: { title: string; description: string }): Promise<void> {
     console.log('body ??');
-    return this._notificationsService.notificationsKp();
-    // .pipe(
-    // catchError(err => {
-    //   error(err);
-    //   throw 'An error happened with push notifs !';
-    // }),
-    // );
+    try {
+      return await this._notificationsService.sendNotification(body);
+    } catch (err) {
+      error(err);
+      throw 'An error happened with sending notifs to users !';
+    }
   }
 
   @Post('/register')
@@ -30,7 +29,7 @@ export class NotificationsController {
       return await this._notificationsService.registerDevice(body.token, body.deviceUuid);
     } catch (err) {
       error(err);
-      throw 'An error happened with push notifs !';
+      throw 'An error happened with registering new device !';
     }
   }
 

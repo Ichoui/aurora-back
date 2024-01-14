@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "aurora-proxy-be7c0"
-  }
+    "default": "aurora-proxy-be7c0",
+    "prod": "aurora-proxy-be7c0",
+    "dev": "aurora-proxy-dev"
+  },
+  "targets": {},
+  "etags": {}
 }
