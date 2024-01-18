@@ -9,7 +9,19 @@ export class NotificationsDto {
   @IsString()
   deviceUuid: string;
 
-  @IsNotEmpty()
   @IsString()
   token: string;
+
+  @IsString()
+  locale: 'EN' | 'FR';
+}
+
+export class NotificationBodyDto {
+  @IsNotEmpty()
+  @IsString()
+  title: string;
+
+  @IsNotEmpty()
+  @IsString()
+  description: string;
 }

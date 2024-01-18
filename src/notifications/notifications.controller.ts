@@ -1,9 +1,10 @@
 import { Body, Controller, Get, HttpCode, Post, UseInterceptors } from '@nestjs/common';
 import { ReqInterceptor } from '../interceptor.service';
 import { NotificationsService } from './notifications.service';
-import { NotificationsDto } from './notifications.dto';
+import { NotificationBodyDto, NotificationsDto } from './notifications.dto';
 import { NotificationsEntity } from './notifications.entity';
 import { error } from 'firebase-functions/logger';
+import { SendResponse } from 'firebase-admin/lib/messaging/messaging-api';
 
 @UseInterceptors(ReqInterceptor)
 @Controller('push')
@@ -12,7 +13,7 @@ export class NotificationsController {
 
   @Post('/notification')
   @HttpCode(200)
-  async sendNotification(@Body() body: { title: string; description: string }): Promise<void> {
+  async sendNotification(@Body() body: NotificationBodyDto): Promise<SendResponse[] | void> {
     console.log('body ??');
     try {
       return await this._notificationsService.sendNotification(body);
@@ -22,14 +23,26 @@ export class NotificationsController {
     }
   }
 
-  @Post('/register')
+  @Post('/register-device')
   @HttpCode(200)
   async registerDevice(@Body() body: NotificationsDto): Promise<NotificationsEntity> {
     try {
-      return await this._notificationsService.registerDevice(body.token, body.deviceUuid);
+
+      return await this._notificationsService.registerDevice(body.deviceUuid, body.token);
     } catch (err) {
       error(err);
       throw 'An error happened with registering new device !';
+    }
+  }
+
+  @Post('/register-locale')
+  @HttpCode(200)
+  async registerLocale(@Body() body: NotificationsDto): Promise<NotificationsEntity> {
+    try {
+      return await this._notificationsService.registerLocale(body.deviceUuid, body.locale);
+    } catch (err) {
+      error(err);
+      throw 'An error happened with registering locale device !';
     }
   }
 
