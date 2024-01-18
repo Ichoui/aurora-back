@@ -14,7 +14,7 @@ export class NotificationsEntity extends BaseEntity {
   token: string;
 
   @Column({ nullable: true })
-  locale: 'FR' | 'EN';
+  locale: string; // en / fr
 
   @Column()
   timestamp: Date;

@@ -14,50 +14,54 @@ export class NotificationsService {
     @InjectRepository(NotificationsEntity) private _notificationsEntityRepository: Repository<NotificationsEntity>,
   ) {}
 
-  private _getAllRegisteredDevice(): { token: string; locale: string }[] {
-    // TODO faire requête en base qui cherche tous les tokens !
-    //  this function woooooooooorks :)
-    // this._notificationsEntityRepository.find()
-
-    return [
-      {
-        token:
-          'fxauFAf8Rf-ew_tgzW0Id3:APA91bECIoSMPSPaCixTz1UBSqmnAMtbCsNK_JsYVs42dV9kE2vo1LxouocFr-zJ6JGUdnn-1VuA48CPmEFMlwujzo2IuYRPk5luRgitPxdX9k4bEQszZw80GLGECrPho6Sof9zs-3OG',
-        locale: 'EN',
-      },
-      {
-        token:
-          'cM-Evi0HSfSMKgqw6QPvhG:APA91bF_077o8hv6AuAf3wUWQabajStXK1cTPnDhe6MpFIBXDHTpxYscQMoUpIFBxwCYmoyylUL9-rani7BHBCo6Xr9w7oeo6ZO-FcUvHjv7DA-5rY_D_do-Ti3Z8-uyS0izGEVTvd5p',
-        locale: 'FR',
-      },
-    ];
+  private async _getAllRegisteredDevice(locale: 'en' | 'fr'): Promise<string[]> {
+    return await this._notificationsEntityRepository.find({ where: { locale } }).then(devices => devices.map(d => d.token));
   }
 
-  async sendNotification(body: NotificationBodyDto): Promise<SendResponse[] | void> {
-    console.log(process.env.project);
-    let tokensFr = [];
-    let tokensEn = [];
-    const max = 500;
-    this._getAllRegisteredDevice().map(d => (d.locale === 'FR' ? tokensFr.push(d.token) : tokensEn.push(d.token)));
 
-    // const tokens = [1,2,3,4,5,6,7,8,9] // Could be thousands of tokens...
-    //
-    //
-    // const empties = new Array(Math.ceil(tokens.length / max))
-    //
-    // const dividedArrs = empties.fill().map(i => tokens.splice(0, max))
-    //
-    // for (const arr of dividedArrs) {
-    //
-    //   sendMultiCastStuff(arr)
-    //
-    // }
-
+  /**
+   * @method sendEachForMulticast() ne peut pas envoyer plus de 500 notifications par lot.
+   * */
+  async sendNotifications(body: { title: string; description: string }, tokens: string[]) {
     return await admin
       .messaging()
-      // TODO max 500 tokens limit... Split device tab and generate a queue ?
-      .sendEachForMulticast({ notification: { title: body.title, body: body.description }, tokens: tokensFr })
+      .sendEachForMulticast({ notification: { title: body.title, body: body.description }, tokens })
       .then(e => e.responses); // what about the return ?
+  }
+
+  /**
+   * Préparation des array de 500 tokens
+   * Découpage des gros tableaux de tokens en FR et EN
+   * */
+  async prepareNotifications(body: NotificationBodyDto): Promise<SendResponse[] | void> {
+    let tokensFr = await this._getAllRegisteredDevice('fr');
+    let tokensEn = await this._getAllRegisteredDevice('en');
+    const max_tokens = 500;
+    const emptiesFr = new Array(Math.ceil(tokensFr.length / max_tokens));
+
+    const dividedFrArr = emptiesFr.fill(null).map(i => tokensFr.splice(0, max_tokens));
+
+    for (const tokens of dividedFrArr) {
+      await this.sendNotifications(this._prepareMessage(body.topic, 'fr'), tokens);
+    }
+
+    const emptiesEn = new Array(Math.ceil(tokensEn.length / max_tokens));
+    const dividedEnArr = emptiesEn.fill(null).map(i => tokensEn.splice(0, max_tokens));
+    for (const tokens of dividedEnArr) {
+      await this.sendNotifications(this._prepareMessage(body.topic, 'en'), tokens);
+    }
+  }
+
+  private _prepareMessage(topic: 'kp', locale: 'fr' | 'en'): { title: string; description: string } {
+    if (topic === 'kp') {
+      switch (locale) {
+        case 'fr':
+          return { title: 'KP Index en augmentation', description: "L'activité solaire augmente" };
+        case 'en':
+        default:
+          return { title: 'KP Index increasing', description: 'Solar activity increasing' };
+      }
+    }
   }
 
   /**

@@ -19,9 +19,5 @@ export class NotificationsDto {
 export class NotificationBodyDto {
   @IsNotEmpty()
   @IsString()
-  title: string;
-
-  @IsNotEmpty()
-  @IsString()
-  description: string;
+  topic: 'kp';
 }

@@ -16,7 +16,7 @@ export class NotificationsController {
   async sendNotification(@Body() body: NotificationBodyDto): Promise<SendResponse[] | void> {
     console.log('body ??');
     try {
-      return await this._notificationsService.sendNotification(body);
+      return await this._notificationsService.prepareNotifications(body);
     } catch (err) {
       error(err);
       throw 'An error happened with sending notifs to users !';
