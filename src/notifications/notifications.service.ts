@@ -1,23 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
 import * as admin from 'firebase-admin';
 import { InjectRepository } from '@nestjs/typeorm';
 import { NotificationsEntity } from './notifications.entity';
 import { LessThan, Repository } from 'typeorm';
 import { NotificationBodyDto } from './notifications.dto';
 import { SendResponse } from 'firebase-admin/lib/messaging/messaging-api';
+import { error } from 'firebase-functions/lib/logger';
 
 @Injectable()
 export class NotificationsService {
   constructor(
-    private readonly _httpService: HttpService,
     @InjectRepository(NotificationsEntity) private _notificationsEntityRepository: Repository<NotificationsEntity>,
   ) {}
 
   private async _getAllRegisteredDevice(locale: 'en' | 'fr'): Promise<string[]> {
     return await this._notificationsEntityRepository.find({ where: { locale } }).then(devices => devices.map(d => d.token));
   }
-
 
   /**
    * @method sendEachForMulticast() ne peut pas envoyer plus de 500 notifications par lot.
@@ -26,7 +24,15 @@ export class NotificationsService {
     return await admin
       .messaging()
       .sendEachForMulticast({ notification: { title: body.title, body: body.description }, tokens })
-      .then(e => e.responses); // what about the return ?
+      .then(e => {
+        // console.log(e.responses);
+        const invalidTokens = e.responses.find(r => !r.success)
+        console.log(invalidTokens);
+        console.log(invalidTokens[0].error);
+        console.log(invalidTokens[0].errorInfo);
+        return e.responses;
+      }) // what about the return ?
+      .catch(err => error(err));
   }
 
   /**
@@ -92,14 +98,10 @@ export class NotificationsService {
   /**
    * Met à jour la locale de notification d'un utilisateur
    * */
-  async registerLocale(deviceUuid: string, locale: 'FR' | 'EN') {
-    console.warn('locale:  ', locale);
-    console.warn('deviceUuid : ', deviceUuid);
+  async registerLocale(deviceUuid: string, locale: 'en' | 'fr'): Promise<boolean> {
     const device = await this._notificationsEntityRepository.findOneBy({ deviceUuid });
-
-    const updated = await this._notificationsEntityRepository.update(device.id, { timestamp: new Date(), locale });
-    console.log(updated);
-    return Promise.resolve(device);
+    await this._notificationsEntityRepository.update(device.id, { timestamp: new Date(), locale });
+    return Promise.resolve(true);
   }
 
   /**

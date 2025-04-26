@@ -13,7 +13,7 @@ export class NotificationsDto {
   token: string;
 
   @IsString()
-  locale: 'EN' | 'FR';
+  locale: 'en' | 'fr';
 }
 
 export class NotificationBodyDto {

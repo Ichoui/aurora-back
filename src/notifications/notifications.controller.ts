@@ -14,7 +14,6 @@ export class NotificationsController {
   @Post('/notification')
   @HttpCode(200)
   async sendNotification(@Body() body: NotificationBodyDto): Promise<SendResponse[] | void> {
-    console.log('body ??');
     try {
       return await this._notificationsService.prepareNotifications(body);
     } catch (err) {
@@ -27,7 +26,6 @@ export class NotificationsController {
   @HttpCode(200)
   async registerDevice(@Body() body: NotificationsDto): Promise<NotificationsEntity> {
     try {
-
       return await this._notificationsService.registerDevice(body.deviceUuid, body.token);
     } catch (err) {
       error(err);
@@ -37,7 +35,7 @@ export class NotificationsController {
 
   @Post('/register-locale')
   @HttpCode(200)
-  async registerLocale(@Body() body: NotificationsDto): Promise<NotificationsEntity> {
+  async registerLocale(@Body() body: NotificationsDto): Promise<boolean> {
     try {
       return await this._notificationsService.registerLocale(body.deviceUuid, body.locale);
     } catch (err) {
