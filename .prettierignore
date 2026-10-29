@@ -1,0 +1,7 @@
+node_modules/
+dist/
+coverage/
+package-lock.json
+src/files/*.json
+src/city/cities.json
+docs/openapi.json

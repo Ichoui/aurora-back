@@ -2,26 +2,26 @@ import { Module } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import { WeatherModule } from './weather/weather.module';
 import { AuroraModule } from './aurora/aurora.module';
-import { APP_INTERCEPTOR } from '@nestjs/core';
-import { ReqInterceptor } from './interceptor.service';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { AuroraHeaderGuard } from './common/aurora-header.guard';
+import { ApiExceptionFilter } from './common/api-exception.filter';
 import { CityModule } from './city/city.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import ormconfig from '../ormconfig';
 
-// const ENV = process.env.NODE_ENV;
 @Module({
   imports: [
     AuroraModule,
     WeatherModule,
     CityModule,
     CacheModule.register({ isGlobal: true }),
-    TypeOrmModule.forRoot(ormconfig),
-    // ConfigModule.forRoot({ envFilePath: !ENV ? '.env' : `.env.${ENV}` }),
   ],
   providers: [
     {
-      provide: APP_INTERCEPTOR,
-      useClass: ReqInterceptor,
+      provide: APP_GUARD,
+      useClass: AuroraHeaderGuard,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: ApiExceptionFilter,
     },
   ],
 })

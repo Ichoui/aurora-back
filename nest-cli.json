@@ -3,13 +3,9 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
+    "plugins": [{ "name": "@nestjs/swagger", "options": { "classValidatorShim": true, "introspectComments": true } }],
     "deleteOutDir": true,
-    "assets": [     {
-      "include": "/files",
-      "outDir": "dist/",
-      "watchAssets": true
-    }
-    ],
-    "watchAssets": true
+    "assets": ["city/cities.json"],
+    "watchAssets": false
   }
 }

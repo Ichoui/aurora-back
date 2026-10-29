@@ -1,176 +1,112 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import * as fs from 'fs';
-import { Cache } from 'cache-manager';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CityEntity } from './city.entity';
-import { Repository } from 'typeorm';
-import { City } from '../interfaces/city.interface';
-import * as path from 'path';
+import { Injectable } from '@nestjs/common';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import type { City } from '../interfaces/city.interface';
+
+export interface CitySearchResult {
+  id: number;
+  name: string;
+  countryCode: string;
+  lat: string;
+  long: string;
+}
+
+interface CityCatalog {
+  cities: City[];
+  names: string[];
+  prefixes: Map<string, number[]>;
+}
+
+const transliterations: Readonly<Record<string, string>> = {
+  Æ: 'AE',
+  æ: 'ae',
+  Œ: 'OE',
+  œ: 'oe',
+  Ø: 'O',
+  ø: 'o',
+  Ł: 'L',
+  ł: 'l',
+  Đ: 'D',
+  đ: 'd',
+  Ð: 'D',
+  ð: 'd',
+  Þ: 'TH',
+  þ: 'th',
+  ß: 'ss',
+  ẞ: 'SS',
+};
+
+function normalizeName(value: string): string {
+  return value
+    .normalize('NFKD')
+    .replace(/[ÆæŒœØøŁłĐđÐðÞþßẞ]/g, letter => transliterations[letter] ?? letter)
+    .replace(/\p{M}/gu, '')
+    .toLowerCase();
+}
+
+function isCity(value: unknown): value is City {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    ['name', 'lat', 'lng', 'country', 'admin1', 'admin2'].every(field => typeof (value as Record<string, unknown>)[field] === 'string')
+  );
+}
 
 @Injectable()
 export class CityService {
-  constructor(
-    @Inject(CACHE_MANAGER) private _cacheService: Cache,
-    @InjectRepository(CityEntity) private _cityEntityResository: Repository<CityEntity>,
-  ) {}
-  private readonly _ttl = 60000 * 120; // 120 minutes, in millisecond
+  private _catalog?: Promise<CityCatalog>;
 
-  async findCorrespondingCities$(search: string): Promise<CityEntity[]> {
-    if (search?.length > 2) {
-      // CREATE EXTENSION IF NOT EXISTS unaccent; //Ajouter cette ligne directement sur la base de donnée pour rajouter l'extension "unaccent" à la bdd
-      const query = await this._cityEntityResository
-        .createQueryBuilder('c')
-        .where("LOWER(UNACCENT(c.name)) ILIKE LOWER(UNACCENT(:name)) || '%'", { name: search.trim() })
-        .getMany();
-      if (!query) {
-        throw new NotFoundException('Ville introuvable !');
-      }
-      return query;
+  async findCorrespondingCities(search = ''): Promise<CitySearchResult[]> {
+    const term = search.trim();
+    if (term.length < 3) return [];
+
+    const normalizedTerm = normalizeName(term);
+    const catalog = await this.loadCatalog();
+    const matches: CitySearchResult[] = [];
+    for (const index of catalog.prefixes.get(normalizedTerm.slice(0, 3)) ?? []) {
+      if (!catalog.names[index]?.startsWith(normalizedTerm)) continue;
+      const city = catalog.cities[index];
+      if (!city) continue;
+      matches.push({ id: index + 1, name: city.name, countryCode: city.country, lat: city.lat, long: city.lng });
     }
+    return matches;
   }
 
-  /**
-   * @deprecated to be remove
-   * */
-  oldFindCorrespondingCities$(cities: City[], search: string): City[] {
-    if (search?.length > 2) {
-      const searchFormatted = this._removeAccents(search).toLowerCase();
-      return cities.filter(c => this._removeAccents(c.name).toLowerCase().includes(searchFormatted));
+  /** @deprecated Retained for mobile clients using /city. */
+  async findLegacyCities(search = ''): Promise<City[] | null> {
+    const term = search.trim();
+    if (term.length < 3) return null;
+
+    const normalizedTerm = normalizeName(term);
+    const catalog = await this.loadCatalog();
+    return catalog.cities.filter((_, index) => catalog.names[index]?.includes(normalizedTerm));
+  }
+
+  private loadCatalog(): Promise<CityCatalog> {
+    return (this._catalog ??= this.readCatalog().catch(error => {
+      this._catalog = undefined;
+      throw error;
+    }));
+  }
+
+  private async readCatalog(): Promise<CityCatalog> {
+    const contents = await readFile(join(__dirname, 'cities.json'), 'utf8');
+    const parsed: unknown = JSON.parse(contents);
+    if (!Array.isArray(parsed) || !parsed.every(isCity)) {
+      throw new Error('Invalid city data');
     }
-    return null;
-  }
 
-  /**
-   * @deprecated
-   * don't forget ro remove cache
-   * */
-  async parseCitiesJson$(): Promise<City[]> {
-    return this._cacheService.get('cities').then(c => {
-      if (c) {
-        return c;
-      } else {
-        const filePath = path.join(process.cwd(), './src/city/cities.json');
-        const configFIle = fs.readFileSync(filePath, 'utf-8').toString();
-        const citiesJson = JSON.parse(configFIle);
-        this._cacheService.set('cities', citiesJson, this._ttl);
-        return citiesJson;
-      }
-    });
-  }
-
-  /**
-   * @deprecated
-   * */
-  private _removeAccents(strAccent: string): string {
-    const strAccentsSplitted = strAccent.split('');
-
-    let strAccentsOut = [];
-    let strAccentsLen: number = strAccentsSplitted.length;
-    const accents: string = 'ÀÁÂÃÄÅÆàáâãäåæßẞÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž';
-    const accentsOut: string[] = [
-      'A',
-      'A',
-      'A',
-      'A',
-      'A',
-      'A',
-      'AE',
-      'a',
-      'a',
-      'a',
-      'a',
-      'a',
-      'a',
-      'ae',
-      'ss',
-      'SS',
-      'O',
-      'O',
-      'O',
-      'O',
-      'O',
-      'O',
-      'O',
-      'o',
-      'o',
-      'o',
-      'o',
-      'o',
-      'o',
-      'E',
-      'E',
-      'E',
-      'E',
-      'e',
-      'e',
-      'e',
-      'e',
-      'e',
-      'C',
-      'c',
-      'D',
-      'I',
-      'I',
-      'I',
-      'I',
-      'i',
-      'i',
-      'i',
-      'i',
-      'U',
-      'U',
-      'U',
-      'U',
-      'u',
-      'u',
-      'u',
-      'u',
-      'N',
-      'n',
-      'S',
-      's',
-      'Y',
-      'y',
-      'y',
-      'Z',
-      'z',
-    ];
-    for (let y = 0; y < strAccentsLen; y++) {
-      if (accents.indexOf(strAccentsSplitted[y]) != -1) {
-        strAccentsOut[y] = accentsOut[accents.indexOf(strAccentsSplitted[y])];
-      } else strAccentsOut[y] = strAccentsSplitted[y];
+    const cities: City[] = parsed;
+    const names: string[] = [];
+    const prefixes = new Map<string, number[]>();
+    for (const [index, city] of cities.entries()) {
+      const name = normalizeName(city.name);
+      names.push(name);
+      const prefix = name.slice(0, 3);
+      const indexes = prefixes.get(prefix) ?? [];
+      indexes.push(index);
+      prefixes.set(prefix, indexes);
     }
-    return strAccentsOut.join('');
+    return { cities, names, prefixes };
   }
-
-  /* postCitiesToBdd(): void {
-    // Ajouter les lignes suivantes dans nest-cli.json sous le compiler, pour pouvoir rajouter le fichier files dans le build
-    //     "assets": [     {
-    //       "include": "/files",
-    //       "outDir": "dist/",
-    //       "watchAssets": true
-    //     }
-    //     ],
-    //     "watchAssets": true
-    fs.promises
-      .readFile('dist/files/cities.json', 'utf-8')
-      .then(e => JSON.parse(e))
-      .then(async (filenames: CityDto[]) => {
-        for (let i = 0; i < filenames.length; i++) {
-          const entity = this._cityEntityResository.create({
-            // nameFormatted: this._removeAccents(filenames[i].name).toLowerCase(),
-            name: filenames[i].name,
-            lat: filenames[i].lat,
-            long: filenames[i].lng,
-            countryCode: filenames[i].country,
-          });
-
-          if (!entity) {
-            console.error('Impossible ajouter ville ' + filenames[i].name);
-          }
-          await this._cityEntityResository.save(entity);
-        }
-      });
-  }*/
 }

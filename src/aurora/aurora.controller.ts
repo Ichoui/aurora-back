@@ -1,149 +1,108 @@
-import { Body, Controller, Get, HttpCode, Post, Query, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Header, HttpCode, Post, Query } from '@nestjs/common';
 import { AuroraService } from './aurora.service';
-import { catchError, from, Observable } from 'rxjs';
-import { ReqInterceptor } from '../interceptor.service';
-import { SERVICES_SWPC, SWPC } from './swpc.model';
-import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
-import { error } from 'firebase-functions/logger';
+import { CoordinatesDto } from '../common/coordinates.dto';
+import { OptionalCoordinatesDto, OvationQueryDto, SolarWindQueryDto } from './aurora.dto';
+import type { KpForecastPoint, NowcastResponse, OvationPoint, SolarCyclePoint, SwpcResponse } from './aurora-response.interface';
+import type { JsonObject, JsonValue } from '../common/json.types';
+import { ApiBody, ApiOkResponse, ApiProduces, ApiTags } from '@nestjs/swagger';
+import {
+  jsonArraySchema,
+  jsonObjectSchema,
+  kpForecastSchema,
+  nowcastSchema,
+  ovationSchema,
+  solarCycleSchema,
+  swpcSchema,
+} from '../openapi/response.schemas';
 
-@UseInterceptors(ReqInterceptor)
+@ApiTags('Aurora')
 @Controller()
 export class AuroraController {
   constructor(private readonly _auroraService: AuroraService) {}
 
   @Get('/')
-  @HttpCode(200)
-  auroraPath$(): string {
-    // Testing if everything works!
-    return this._auroraService.auroraPath$();
+  @ApiProduces('text/html')
+  @ApiOkResponse({ description: 'Service greeting', schema: { type: 'string', example: 'Hello Aurora Chasers!' } })
+  auroraPath(): string {
+    return this._auroraService.auroraPath();
   }
 
   @Post('/swpc')
+  @ApiBody({ type: OptionalCoordinatesDto, required: false })
+  @ApiOkResponse({ description: 'Combined NOAA datasets', schema: swpcSchema })
   @HttpCode(200)
-  getAllSwpcDatas$(@Body() coords: { lat: number; lng: number }): Observable<{
-    forecastSolarCycle: any;
-    forecastSolarWind: any;
-    forecastKp: any;
-    forecastTwentySevenDays: any;
-    instantKp: any;
-  }> {
-    return from(this._auroraService.getAllSwpcDatas$(coords)).pipe(
-      catchError(err => {
-        error(err);
-        throw 'An error happened on NOAA SWPC API !';
-      }),
-    );
+  getAllSwpcData(@Body() _coords: OptionalCoordinatesDto): Promise<SwpcResponse> {
+    return this._auroraService.getAllSwpcData();
   }
 
   @Get('/map/ovation')
-  @CacheKey('ovationData')
-  @CacheTTL(30 * 60000) // override TTL to 30 * 60000 milliseconds
-  @HttpCode(200)
-  getOvation$(@Query() coords?: { lat: number; lng: number }): Observable<Promise<any>> {
-    return this._auroraService.getOneSwpcData$(SERVICES_SWPC.OVATION_MAP, SWPC.OVATION_MAP, coords).pipe(
-      catchError(err => {
-        error(err);
-        throw 'An error happened on ovation map NOAA SWPC API !';
-      }),
-    );
+  @Header('Content-Type', 'application/json')
+  @ApiOkResponse({
+    description: 'Map coordinate tuples, or probability for a complete coordinate pair; empty body if no coordinate matches',
+    schema: ovationSchema,
+  })
+  getOvation(@Query() query: OvationQueryDto): Promise<OvationPoint[] | number | null> {
+    const longitude = query.lng ?? query.long;
+    if (query.lng !== undefined && query.long !== undefined && query.lng !== query.long) {
+      throw new BadRequestException('Longitude aliases lng and long must match');
+    }
+    const coords = query.lat !== undefined && longitude !== undefined ? { lat: query.lat, lng: longitude } : undefined;
+    return this._auroraService.getOvation(coords);
   }
 
   @Get('/forecast/solarcycle')
-  @HttpCode(200)
-  getSolarCycle$(): Observable<Promise<any>> {
-    return this._auroraService.getOneSwpcData$(SERVICES_SWPC.FORECAST_SOLARCYCLE, SWPC.FORECAST_SOLARCYCLE).pipe(
-      catchError(err => {
-        error(err);
-        throw 'An error happened on solarCycle NOAA SWPC API !';
-      }),
-    );
+  @ApiOkResponse({ description: 'Solar-cycle predictions with historical sampling', schema: solarCycleSchema })
+  getSolarCycle(): Promise<SolarCyclePoint[]> {
+    return this._auroraService.getSolarCycle();
   }
 
   @Get('/forecast/solarwind1h')
-  @HttpCode(200)
-  getSolarWind1h$(): Observable<Promise<any>> {
-    return this._auroraService.getOneSwpcData$(SERVICES_SWPC.FORECAST_SOLARWIND_1H, SWPC.FORECAST_SOLARWIND_1H).pipe(
-      catchError(err => {
-        error(err);
-        throw 'An error happened on solarWind 1hour NOAA SWPC API !';
-      }),
-    );
+  @ApiOkResponse({ description: 'Solar-wind samples with historical field names', schema: jsonArraySchema })
+  getSolarWind1h(): Promise<JsonObject[]> {
+    return this._auroraService.getSolarWind1h();
   }
 
   @Get('/forecast/solarwind7d')
-  @HttpCode(200)
-  getSolarWind7d$(@Query() firstDate: string): Observable<Promise<any>> {
-    return this._auroraService.getOneSwpcData$(SERVICES_SWPC.FORECAST_SOLARWIND_7D, SWPC.FORECAST_SOLARWIND_7D, { date: firstDate }).pipe(
-      catchError(err => {
-        error(err);
-        throw 'An error happened on solarWind 7 days NOAA SWPC API !';
-      }),
-    );
+  @ApiOkResponse({ description: 'Solar-wind time_tag/speed samples after firstDate, preserving historical thinning', schema: jsonArraySchema })
+  getSolarWind7d(@Query() query: SolarWindQueryDto): Promise<JsonObject[]> {
+    return this._auroraService.getSolarWind7d(query.firstDate);
   }
 
   @Get('/instant/kp')
-  @HttpCode(200)
-  getInstantKp$(): Observable<Promise<any>> {
-    return this._auroraService.getOneSwpcData$(SERVICES_SWPC.INSTANT_KP, SWPC.INSTANT_KP).pipe(
-      catchError(err => {
-        error(err);
-        throw 'An error happened on KPi 1 month NOAA SWPC API !';
-      }),
-    );
+  @ApiOkResponse({ description: 'Latest NOAA KP record; empty body when no data exists', schema: jsonObjectSchema })
+  getInstantKp(): Promise<JsonObject | null> {
+    return this._auroraService.getInstantKp();
   }
 
   @Post('/instant/nowcast')
+  @ApiOkResponse({ description: 'Local probability from the shared Ovation dataset', schema: nowcastSchema })
   @HttpCode(200)
-  postNowcast$(@Body() coords: { lat: number; lng: number }): Observable<Promise<number>> {
-    return this._auroraService.getOneSwpcData$(SERVICES_SWPC.INSTANT_NOWCAST, SWPC.INSTANT_NOWCAST, coords).pipe(
-      catchError(err => {
-        error(err);
-        throw 'An error happened on instant nowcast local API !';
-      }),
-    );
+  getNowcast(@Body() coords: CoordinatesDto): Promise<NowcastResponse> {
+    return this._auroraService.getNowcast(coords);
   }
 
   @Get('/map/polenorth')
-  @HttpCode(200)
-  getPoleNorthMap$(): Observable<Promise<any>> {
-    return this._auroraService.getOneSwpcData$(SERVICES_SWPC.POLE_NORTH, SWPC.POLE_NORTH).pipe(
-      catchError(err => {
-        error(err);
-        throw 'An error happened on map pole north NOAA SWPC API !';
-      }),
-    );
+  @ApiOkResponse({ description: 'NOAA north-pole animation metadata', schema: jsonArraySchema })
+  getPoleNorthMap(): Promise<JsonValue> {
+    return this._auroraService.getPoleNorthMap();
   }
 
   @Get('/map/polesouth')
-  @HttpCode(200)
-  getPoleSouthMap$(): Observable<Promise<any>> {
-    return this._auroraService.getOneSwpcData$(SERVICES_SWPC.POLE_SOUTH, SWPC.POLE_SOUTH).pipe(
-      catchError(err => {
-        error(err);
-        throw 'An error happened on map pole south NOAA SWPC API !';
-      }),
-    );
+  @ApiOkResponse({ description: 'NOAA south-pole animation metadata', schema: jsonArraySchema })
+  getPoleSouthMap(): Promise<JsonValue> {
+    return this._auroraService.getPoleSouthMap();
   }
 
   @Get('/forecast/twentysevendays')
-  @HttpCode(200)
-  get27DaysForecast$(): Observable<Promise<any>> {
-    return this._auroraService.getOneSwpcData$(SERVICES_SWPC.TWENTY_SEVEN_DAYS, SWPC.TWENTY_SEVEN_DAYS).pipe(
-      catchError(err => {
-        error(err);
-        throw 'An error happened on 27 days NOAA SWPC API !';
-      }),
-    );
+  @ApiProduces('text/html')
+  @ApiOkResponse({ description: 'Raw NOAA outlook text', schema: { type: 'string' } })
+  get27DaysForecast(): Promise<string> {
+    return this._auroraService.get27DaysForecast();
   }
 
   @Get('/forecast/kp')
-  @HttpCode(200)
-  getKpForecast$(): Observable<Promise<any>> {
-    return this._auroraService.getOneSwpcData$(SERVICES_SWPC.FORECAST_KP, SWPC.FORECAST_KP).pipe(
-      catchError(err => {
-        error(err);
-        throw 'An error happened on KP Forecast API !';
-      }),
-    );
+  @ApiOkResponse({ description: 'Predicted KP indices', schema: kpForecastSchema })
+  getKpForecast(): Promise<KpForecastPoint[]> {
+    return this._auroraService.getKpForecast();
   }
 }

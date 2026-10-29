@@ -1,34 +1,26 @@
-import { Controller, Get, HttpCode, Query, UseInterceptors } from '@nestjs/common';
-import { ReqInterceptor } from '../interceptor.service';
+import { Controller, Get, HttpCode, Query } from '@nestjs/common';
 import { WeatherService } from './weather.service';
-import { AxiosResponse } from 'axios';
-import { catchError, Observable } from 'rxjs';
-import { error } from 'firebase-functions/logger';
+import type { JsonObject } from '../common/json.types';
+import { GeocodeQueryDto, WeatherQueryDto } from './weather.dto';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { jsonArraySchema, jsonObjectSchema } from '../openapi/response.schemas';
 
-@UseInterceptors(ReqInterceptor)
+@ApiTags('Weather')
 @Controller()
 export class WeatherController {
   constructor(private readonly _weatherService: WeatherService) {}
 
   @Get('/geocode')
+  @ApiOkResponse({ description: 'Raw OpenWeather reverse-geocoding results', schema: jsonArraySchema })
   @HttpCode(200)
-  getGeocode(@Query() params: any): Observable<AxiosResponse<any>> {
-    return this._weatherService.reverseGeoCode$(params).pipe(
-      catchError(err => {
-        error(err);
-        throw 'An error happened with reverse geocode api !';
-      }),
-    );
+  getGeocode(@Query() params: GeocodeQueryDto): Promise<JsonObject[]> {
+    return this._weatherService.reverseGeoCode(params);
   }
 
   @Get('/weather')
+  @ApiOkResponse({ description: 'Raw OpenWeather forecast', schema: jsonObjectSchema })
   @HttpCode(200)
-  getWeather(@Query() params: any): Observable<AxiosResponse<any>> {
-    return this._weatherService.getWeather$(params).pipe(
-      catchError(err => {
-        error(err);
-        throw 'An  error happened with weather api !';
-      }),
-    );
+  getWeather(@Query() params: WeatherQueryDto): Promise<JsonObject> {
+    return this._weatherService.getWeather(params);
   }
 }
