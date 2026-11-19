@@ -5,7 +5,7 @@
   "description": "Shared Aurora Borealis API for Aurorapp mobile clients",
   "private": true,
   "scripts": {
-    "start": "npm run build && firebase emulators:start --only functions",
+    "start": "npm run build && FUNCTIONS_DISCOVERY_TIMEOUT=30 firebase emulators:start --only functions",
     "dev:watch": "nest build --watch --watchAssets",
     "dev:emulator": "firebase emulators:start --only functions",
     "build:watch": "tsc --watch --preserveWatchOutput",

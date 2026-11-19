@@ -5,7 +5,10 @@ import { fetchUpstream } from '../common/upstream-http';
 import type { GeocodeQueryDto, OpenWeatherCoordinatesDto, WeatherQueryDto } from './weather.dto';
 
 function queryParams(params: OpenWeatherCoordinatesDto): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(params).filter(([, value]) => value !== undefined));
+  const query = Object.fromEntries(Object.entries(params).filter(([, value]) => value !== undefined));
+  const serverKey = process.env.OPENWEATHER_API_KEY?.trim();
+  if (params.appid === undefined && serverKey) query.appid = serverKey;
+  return query;
 }
 
 @Injectable()

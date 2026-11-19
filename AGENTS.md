@@ -9,3 +9,9 @@ Codex peut lire les deux dépôts pour comprendre un flux complet, vérifier l'u
 Le contrat côté serveur est décrit dans `docs/api-contract.md` et `docs/openapi.json`. En cas d'écart avec le client, examiner les deux implémentations avant de décider laquelle adapter. Préserver la compatibilité des clients existants et éviter toute hypothèse propre à Android dans l'API partagée.
 
 Respecter les préférences personnelles de l'utilisateur : communiquer en français ; aucun test, lint, contrôle ou opération Git sans demande explicite.
+
+## Navigation et plan Aurora
+
+- `@Chrome` et « Chrome » désignent Brave pour les tâches Aurora. Utiliser l’extension de contrôle Chrome connectée à Brave. Si elle est indisponible, signaler la limite et utiliser Brave directement lorsque le contrôle natif est disponible.
+- Dans Brave, réutiliser l’onglet Aurora déjà ouvert, y compris pour changer de route ou de port local. Créer un onglet uniquement si aucun onglet Aurora n’est ouvert.
+- Le [plan backend](../aurora-front/ia/back/01-firebase-et-contrat.md) est centralisé dans le dépôt front. Voir le [guide de déploiement Firebase](docs/deployment.md) pour les releases.

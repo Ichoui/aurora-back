@@ -28,7 +28,7 @@ npm run dev:front        # Terminal 3 : application Angular
 
 Ouvrez l'adresse locale affichée par Angular. Le client pointe déjà vers l'URL locale de l'émulateur (`127.0.0.1:5001`). Arrêtez chaque processus avec `Ctrl+C`. Pour travailler uniquement dans ce dépôt, les deux commandes backend équivalentes sont `npm run dev:watch` et `npm run dev:emulator`.
 
-`npm start` conserve le démarrage ponctuel avec compilation ; `npm run deploy` compile puis déploie les Functions.
+`npm start` conserve le démarrage ponctuel avec compilation. Pour déployer la fonction `aurora` sur un projet explicite, suivre le [guide de déploiement Firebase](docs/deployment.md). Le [plan de qualification backend](../aurora-front/ia/back/01-firebase-et-contrat.md) est centralisé dans le dépôt front.
 
 The Firebase CLI is installed locally. Emulation and deployment use its locked version. Authenticate with `npx firebase login` only when access to your Firebase project is needed.
 
